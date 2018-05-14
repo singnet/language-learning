@@ -12,12 +12,12 @@ import os
 # import numpy as np
 
 try:
-    from link_grammar.lgparse import *
+    # from link_grammar.lgparse import *
     from link_grammar.cliutils import *
     from link_grammar.evaluate import *
 
 except ImportError:
-    from lgparse import *
+    # from lgparse import *
     from cliutils import *
     from evaluate import *
 
@@ -31,55 +31,6 @@ def version():
     """
     print("Code writen for Python3.6.4. Using: %s"%platform.python_version())
 
-
-def compare_ull_files(test_path, ref_file, verbose, ignore_WALL):
-    """ Initiates evaluation process for one or multiple files."""
-
-    def evaluate(test_file):
-        """ Callback evaluation function """
-        print("\nComparing parses:")
-        print("-----------------")
-        print("File being tested: '" + test_file + "'")
-        print("Reference file   : '" + ref_file + "'")
-
-        out_file = test_file + ".qc"
-        print("Result file      : '" + out_file + "'")
-
-        try:
-            test_data = Load_File(test_file)
-            # test_parses = Get_Parses(test_data)
-
-            test_parses = get_parses(test_data, ignore_WALL)
-
-            ref_data = Load_File(ref_file)
-            # ref_parses = Get_Parses(ref_data)
-
-            ref_parses = get_parses(ref_data, ignore_WALL)
-
-            with open(out_file, "w") as ofile:
-                print("Reference file   : '" + ref_file + "'", file=ofile)
-                # Evaluate_Parses(test_parses, ref_parses, verbose, ignore_WALL, ofile)
-
-                eval_parses(test_parses, ref_parses, verbose, ignore_WALL, ofile)
-
-        except IOError as err:
-            print("IOError: " + str(err))
-
-        except Exception as err:
-            print("Exception: " + str(err))
-
-
-    # If specified name is a file.
-    if os.path.isfile(test_path):
-        evaluate(test_path)
-
-    # If specified name is a directory.
-    elif os.path.isdir(test_path):
-        traverse_dir(test_path, ".ull2", evaluate, None, True)
-
-    # If file or directory does not exist.
-    else:
-        raise("Error: File or directory '" + test_path + "' does not exist.")
 
 
 def main(argv):
