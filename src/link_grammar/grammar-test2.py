@@ -153,6 +153,9 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
         parse_corpus_files(input_path, output_path, dict_path, grammar_path, template_path,
                            linkage_limit, options)
 
+    except LGParseError as err:
+        print(str(err))
+
     except OSError as err:
         print(str(err))
 

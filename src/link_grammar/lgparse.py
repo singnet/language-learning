@@ -23,7 +23,7 @@ except ImportError:
 
 
 __all__ = ['parse_corpus_files', 'parse_file_with_api', 'parse_file_with_lgp', 'parse_batch_ps_output',
-           'LG_DICT_PATH', 'traverse_dir', 'create_dir',
+           'LG_DICT_PATH', 'traverse_dir', 'create_dir', 'LGParseError'
            ]
 
 __version__ = "2.1.3"
@@ -547,7 +547,7 @@ def parse_corpus_files(src_dir, dst_dir, dict_dir, grammar_dir, template_dir, li
         if os.path.isdir(dict_dir):
             traverse_dir(dict_dir, ".dict", on_dict_file, f_ptr, True)
 
-        # Otherwise dic_dir might be either .dict file name, or LG shiped language name.
+        # Otherwise dict_dir might be either .dict file name, or LG shiped language name.
         else:
             on_dict_file(dict_dir)
 
