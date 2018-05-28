@@ -68,17 +68,17 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
 
     try:
         opts, args = getopt.getopt(argv, "hcwrnubqexsLd:i:o:l:g:t:f:", ["help", "caps", "right-wall", "rm-dir",
-                                                                     "no-strip", "ull-input", "best-linkage",
-                                                                     "dict-path-recreate", "link-parser-exe",
-                                                                     "no-left-wall", "separate-stat", "local-lang-dir",
-                                                                     "dictionary=", "input=", "output=",
-                                                                     "linkage-limit=", "grammar-dir=", "template-dir=",
-                                                                     "output-format"])
+                                                                        "no-strip", "ull-input", "best-linkage",
+                                                                        "dict-path-recreate", "link-parser-exe",
+                                                                        "no-left-wall", "separate-stat",
+                                                                        "local-lang-dir", "dictionary=", "input=",
+                                                                        "output=", "linkage-limit=", "grammar-dir=",
+                                                                        "template-dir=", "output-format"])
 
         for opt, arg in opts:
             if opt in ("-h", "--help"):
                 print(main.__doc__)
-                exit(0)
+                return 0
             elif opt in ("-c", "--caps"):
                 options |= BIT_CAPS
             elif opt in ("-w", "--right-wall"):
@@ -127,12 +127,12 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
 
     except getopt.GetoptError:
         print(main.__doc__)
-        exit(1)
+        return 1
 
     if input_path is None:
         print("Error: Input file path is not specified.")
         print(main.__doc__)
-        exit(1)
+        return 1
 
     if linkage_limit is None:
         linkage_limit = 1
@@ -155,10 +155,13 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
 
     except LGParseError as err:
         print(str(err))
+        return 2
 
     except OSError as err:
         print(str(err))
+        return 3
 
+    return 0
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))

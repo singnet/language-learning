@@ -6,10 +6,9 @@
 # See main() documentation below for usage details
 
 import platform
-import getopt, sys
+import getopt
+import sys
 import os
-# import matplotlib.pyplot as plt
-# import numpy as np
 
 try:
     # from link_grammar.lgparse import *
@@ -21,16 +20,12 @@ except ImportError:
     from cliutils import *
     from evaluate import *
 
-class EvalError(Exception):
-    pass
-
 
 def version():
     """
         Prints Python version used
     """
-    print("Code writen for Python3.6.4. Using: %s"%platform.python_version())
-
+    print("Code writen for Python3.6.4. Using: %s" % platform.python_version())
 
 
 def main(argv):
@@ -63,7 +58,7 @@ def main(argv):
     test_file = ''
     ref_file = ''
     verbose = False
-    ignore_WALL = False
+    ignore_wall = False
 
     try:
         opts, args = getopt.getopt(argv, "ht:r:vi", ["test=", "reference=", "verbose", "ignore"])
@@ -83,20 +78,19 @@ def main(argv):
         elif opt in ("-v", "--verbose"):
             verbose = True
         elif opt in ("-i", "--ignore"):
-            ignore_WALL = True
-
-    # Check if the arguments are properly specified.
-    if test_file is None or ref_file is None or len(test_file) == 0 or len(ref_file) == 0:
-        print(main.__doc__)
-        exit(3)
-
-    # If reference file does not exist then there is nothing to compare.
-    if not os.path.isfile(ref_file):
-        print("Error: File '" + ref_file + "' does not exist.")
-        exit(4)
+            ignore_wall = True
 
     try:
-        compare_ull_files(test_file, ref_file, verbose, ignore_WALL)
+        # Check if the arguments are properly specified.
+        if test_file is None or ref_file is None or len(test_file) == 0 or len(ref_file) == 0:
+            print(main.__doc__)
+            raise EvalError("Error: Arguments are not properly specified.")
+
+        # If reference file does not exist then there is nothing to compare.
+        if not os.path.isfile(ref_file):
+            raise EvalError("Error: File '" + ref_file + "' does not exist.")
+
+        compare_ull_files(test_file, ref_file, verbose, ignore_wall)
 
     except EvalError as err:
         print(str(err))

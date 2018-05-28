@@ -66,18 +66,20 @@ def parse_tokens(txt, opt) -> list:
                 token = "###" + token + "###"
                 toks.append(token)
         else:
+            if token_count == 0:
+                toks.append(r"###LEFT-WALL###")
+                token_count += 1
+
             if opt & BIT_CAPS == 0:
                 token = token.lower()
-
-            # # Add LEFT-WALL even if it was not returned by LG parser to make word token count start from one
-            # if token_count == 0:
-            #     toks.append(r"###LEFT-WALL###")
 
             toks.append(token)
 
         start_pos = end_pos + 2
         end_pos = txt.find(")", start_pos)
         token_count += 1
+
+    # print(toks)
     return toks
 
 
@@ -92,10 +94,10 @@ def parse_links(txt, toks) -> list:
     links = []
     inc = 0
 
-    # Add LEFT-WALL token if not already presented
-    if not toks[0].startswith(r"###"):
-        toks.insert(0, r"###LEFT-WALL###")
-        inc = 1         # index increment to make sure the links are stay correct
+    # # Add LEFT-WALL token if not already presented
+    # if not toks[0].startswith(r"###"):
+    #     toks.insert(0, r"###LEFT-WALL###")
+    #     inc = 1         # index increment to make sure the links are stay correct
 
     token_count = len(toks)
 
@@ -120,12 +122,12 @@ def parse_links(txt, toks) -> list:
     return links
 
 
-def parse_postscript(text:str, options:int, ofile) -> ([], []):
+def parse_postscript(text: str, options: int, ofile) -> ([], []):
     """
     Parse postscript notation of the linkage.
 
     :param text: text string returned by Linkage.postscript() method.
-    :param ofile: output file object refference
+    :param ofile: output file object reference
     :return: Tuple of two lists: (tokens, links).
     """
 
@@ -145,36 +147,3 @@ def parse_postscript(text:str, options:int, ofile) -> ([], []):
         print(text, file=sys.stderr)
 
     return [], []
-
-
-# def parse_postscript(text:str, options:int, ofile) -> (int, int, float):
-#     """
-#     Parse postscript notation of the linkage.
-#
-#     :param text: text string returned by Linkage.postscript() method.
-#     :param ofile: output file object refference
-#     :return: Tuple (int, int, float):
-#                 - Number of successfully parsed linkages;
-#                 - Number of completely unparsed linkages;
-#                 - Average value of successfully linked tokens.
-#     """
-#
-#     p = re.compile('\[(\(.+?\)+?)\]\[(.*?)\]\[0\]', re.S)
-#
-#     m = p.match(text)
-#
-#     if m is not None:
-#         tokens = parse_tokens(m.group(1), options)
-#         links = parse_links(m.group(2), tokens)
-#         sorted_links = sorted(links, key=lambda x: (x[0], x[2]))
-#
-#         if not (options & BIT_OUTPUT):
-#             print_output(tokens, sorted_links, options, ofile)
-#
-#         return calc_stat(tokens)
-#
-#     else:
-#         print("parse_postscript(): regex does not match!", file=sys.stderr)
-#         print(text, file=sys.stderr)
-#
-#     return 0, 0, 0.0

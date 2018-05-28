@@ -1,79 +1,20 @@
 import unittest
 import sys
-import os
 
-from link_grammar.lgparse import calc_stat, parse_postscript, \
-    parse_file_with_api, parse_file_with_lgp, parse_batch_ps_output, \
-    create_grammar_dir, LGParseError, BIT_STRIP, BIT_RWALL, BIT_CAPS, BIT_ULL_IN, BIT_OUTPUT_DIAGRAM, \
-    BIT_OUTPUT_POSTSCRIPT, BIT_OUTPUT_CONST_TREE, BIT_NO_LWALL
+try:
+    from link_grammar.lgapiparser import parse_file_with_api
+    from link_grammar.lgparse import print_output, create_grammar_dir, LGParseError
+    from link_grammar.optconst import *
+    from link_grammar.inprocparser import parse_batch_ps_output, parse_file_with_lgp
+    from link_grammar.parsemetrics import ParseMetrics, ParseQuality
 
-lg_post_output = """
-echo set to 1
-postscript set to 1
-graphics set to 0
-verbosity set to 0
-tuna has fin .
-[(LEFT-WALL)(tuna)(has)(fin)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C04)][3 4 0 (C04C03)]]
-[0]
+except ImportError:
+    from lgapiparser import parse_file_with_api
+    from lgparse import print_output, create_grammar_dir, LGParseError
+    from optconst import *
+    from inprocparser import parse_batch_ps_output, parse_file_with_lgp
+    from parsemetrics import ParseMetrics, ParseQuality
 
-eagle isa bird .
-[(LEFT-WALL)(eagle)(isa)(bird)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C06)][3 4 0 (C06C03)]]
-[0]
-
-fin isa extremity .
-[(LEFT-WALL)(fin)(isa)(extremity)(.)]
-[[0 1 0 (C05C04)][1 2 0 (C04C01)][2 3 0 (C01C06)][3 4 0 (C06C03)]]
-[0]
-
-tuna isa fish .
-[(LEFT-WALL)(tuna)(isa)(fish)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C06)][3 4 0 (C06C03)]]
-[0]
-
-fin has scale .
-[(LEFT-WALL)(fin)([has])(scale)(.)]
-[[0 1 0 (C05C04)][1 3 0 (C04C04)][3 4 0 (C04C03)]]
-[0]
-
-eagle has wing .
-[(LEFT-WALL)(eagle)(has)(wing)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C04)][3 4 0 (C04C03)]]
-[0]
-
-wing has feather .
-[(LEFT-WALL)(wing)([has])(feather)(.)]
-[[0 1 0 (C05C04)][1 3 0 (C04C04)][3 4 0 (C04C03)]]
-[0]
-
-wing isa extremity .
-[(LEFT-WALL)(wing)(isa)(extremity)(.)]
-[[0 1 0 (C05C04)][1 2 0 (C04C01)][2 3 0 (C01C06)][3 4 0 (C06C03)]]
-[0]
-
-herring isa fish .
-[(LEFT-WALL)(herring)(isa)(fish)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C06)][3 4 0 (C06C03)]]
-[0]
-
-herring has fin .
-[(LEFT-WALL)(herring)(has)(fin)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C04)][3 4 0 (C04C03)]]
-[0]
-
-parrot isa bird .
-[(LEFT-WALL)(parrot)(isa)(bird)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C06)][3 4 0 (C06C03)]]
-[0]
-
-parrot has wing .
-[(LEFT-WALL)(parrot)(has)(wing)(.)]
-[[0 1 0 (C05C02)][1 2 0 (C02C01)][2 3 0 (C01C04)][3 4 0 (C04C03)]]
-[0]
-
-Bye.
-"""
 
 class TestStringMethods(unittest.TestCase):
     """ TestStringMethods """
@@ -90,63 +31,79 @@ class TestStringMethods(unittest.TestCase):
         return True
 
     # @unittest.skip
-    def test_parse_file_with_api(self):
+    def test_parse_file_with_api_ordinary(self):
         """ Test parse with default dictionary """
         print(__doc__, sys.stderr)
 
         # Testing over poc-turtle corpus... 100% success is expected.
         options = 0 | BIT_STRIP
-        f, n, s = parse_file_with_api("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
+        metrics = parse_file_with_api("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
                              None, 1, options)
-        # print("Completely: {0}, Unparsed: {1}, Average: {2}".format(f, n, s), file=sys.stderr)
-        self.assertFalse(f+n+s < 0.001)
-        self.assertTrue(f-1.0<0.01 and n<0.01 and s-1.0 < 0.01)
+
+        self.assertEqual(1.0, metrics.completely_parsed_ratio)
+        self.assertEqual(0.0, metrics.completely_unparsed_ratio)
+        self.assertEqual(1.0, metrics.average_parsed_ratio)
+
+    # @unittest.skip
+    def test_parse_file_with_api_ull(self):
 
         # Testing over poc-turtle corpus retreaved from MST-parser links output. 100% success is expected.
         options = 0 | BIT_STRIP | BIT_ULL_IN
-        f, n, s = parse_file_with_api("test-data/dict/poc-turtle",
+        metrics = parse_file_with_api("test-data/dict/poc-turtle",
                              "test-data/parses/poc-turtle-mst/poc-turtle-opencog-mst-parses.txt",
                              None, 1, options)
-        # print("Completely: {0}, Unparsed: {1}, Average: {2}".format(f, n, s))
-        self.assertFalse(f+n+s < 0.001)
-        self.assertTrue(f-1.0<0.01 and n<0.01 and s-1.0 < 0.01)
+
+        self.assertEqual(1.0, metrics.completely_parsed_ratio)
+        self.assertEqual(0.0, metrics.completely_unparsed_ratio)
+        self.assertEqual(1.0, metrics.average_parsed_ratio)
+
+    # @unittest.skip
+    def test_parse_file_with_api_eng(self):
+
+        options = 0 | BIT_STRIP | BIT_ULL_IN
 
         # Testing over poc-english corpus retreaved from hand coded links
-        f, n, s = parse_file_with_api("test-data/dict/poc-turtle",
-                             "test-data/parses/poc-english-mst/poc_english_noamb_parse_ideal.txt",
-                             None, 1, options)
-        # print("Completely: {0:2.2f}, Unparsed: {1:2.2f}, Average: {2:2.2f}".format(f, n, s))
-        self.assertFalse(f+n+s < 0.001)
-        self.assertTrue(f-1.0<0.01 and n<0.01 and s-1.0 < 0.01)
+        metrics = parse_file_with_api("en", "test-data/parses/poc-english-mst/poc_english_noamb_parse_ideal.txt",
+                                    None, 1, options)
+
+        self.assertEqual(1.0, metrics.completely_parsed_ratio)
+        self.assertEqual(0.0, metrics.completely_unparsed_ratio)
+        self.assertEqual(1.0, metrics.average_parsed_ratio)
 
     # @unittest.skip
     def test_parse_file_with_lgp(self):
         """ Test 'parse_file_with_lgp' with default dictionary """
-        print(__doc__, sys.stderr)
+        # print(__doc__, sys.stderr)
 
         # Testing over poc-turtle corpus... 100% success is expected.
         options = 0 | BIT_STRIP
 
-        f, n, s = parse_file_with_lgp("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
+        metrics = parse_file_with_lgp("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
                              None, 1, options)
-        # print("Completely: {0}, Unparsed: {1}, Average: {2}".format(f, n, s))
-        self.assertFalse(f+n+s < 0.001)
-        self.assertTrue(f-1.0<0.01 and n<0.01 and s-1.0 < 0.01)
 
-        # Test if two functions return the same results.
-        tup_api = (.0, .0, .0)
-        tup_lgp = (.0, .0, .0)
+        self.assertEqual(1.0, metrics.completely_parsed_ratio)
+        self.assertEqual(0.0, metrics.completely_unparsed_ratio)
+        self.assertEqual(1.0, metrics.average_parsed_ratio)
 
-        tup_api = parse_file_with_api("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
+    def test_parse_file_with_lgp_vs_api(self):
+        """ Test 'parse_file_with_lgp' with default dictionary """
+        # print(__doc__, sys.stderr)
+
+        # Testing over poc-turtle corpus... 100% success is expected.
+        options = 0 | BIT_STRIP | BIT_NO_LWALL
+
+        api_metrics = parse_file_with_api("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
                                       None, 1, options)
 
-        tup_lgp = parse_file_with_lgp("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
+        lgp_metrics = parse_file_with_lgp("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
                                       None, 1, options)
 
-        print(tup_api, sys.stderr)
-        print(tup_lgp, sys.stderr)
+        print(ParseMetrics.text(api_metrics), sys.stderr)
+        print(ParseMetrics.text(lgp_metrics), sys.stderr)
 
-        self.assertEqual(tup_api, tup_lgp)
+        self.assertEqual(api_metrics.completely_parsed_ratio, lgp_metrics.completely_parsed_ratio)
+        self.assertEqual(api_metrics.completely_unparsed_ratio, lgp_metrics.completely_unparsed_ratio)
+        self.assertEqual(api_metrics.average_parsed_ratio, lgp_metrics.average_parsed_ratio)
 
     # @unittest.skip
     def test_create_grammar_dir(self):
@@ -154,12 +111,8 @@ class TestStringMethods(unittest.TestCase):
 
         with self.assertRaises(LGParseError) as ctx:
             create_grammar_dir("/home/alex/en", "", "", 0)
-        self.assertEqual("Dictionary path does not exist.", str(ctx.exception))
 
-    # @unittest.skip
-    def test_parse_batch_ps_output(self):
-        num_sent = len(parse_batch_ps_output(lg_post_output))
-        self.assertEqual(num_sent, 12, "'parse_batch_ps_output()' returns '{}' instead of '{}'".format(num_sent, 12))
+        self.assertEqual("Dictionary path does not exist.", str(ctx.exception))
 
 
 if __name__ == '__main__':
