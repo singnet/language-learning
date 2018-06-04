@@ -10,16 +10,7 @@ import getopt
 import sys
 import os
 
-try:
-    # from link_grammar.lgparse import *
-    from link_grammar.cliutils import *
-    from link_grammar.evaluate import *
-
-except ImportError:
-    # from lgparse import *
-    from cliutils import *
-    from evaluate import *
-
+from grammartest import compare_ull_files, EvalError, handle_path_string
 
 def version():
     """

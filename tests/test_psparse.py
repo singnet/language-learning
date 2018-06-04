@@ -14,6 +14,16 @@ except ImportError:
     from parsestat import parse_metrics
 
 
+gutenberg_children_bug = \
+"""
+[(LEFT-WALL)(")(project.v)(gutenberg[?].n)('s.p)(alice[?].n)('s.p)(adventures.n)([in])(wonderland.n)
+(,)(by)(lewis[!])(carroll[?].n)(")(()(edited.v-d)())]
+[[0 2 1 (Wi)][0 1 0 (ZZZ)][2 9 2 (Os)][6 9 1 (Ds**x)][5 6 0 (YS)][4 5 0 (D*u)][3 4 0 (YS)]
+[7 9 0 (AN)][9 11 1 (MXsx)][10 11 0 (Xd)][11 17 2 (Xc)][11 13 1 (Jp)][12 13 0 (AN)][13 16 1 (MXsp)]
+[16 17 0 (Xca)][13 14 0 (ZZZ)][15 16 0 (Xd)]]
+[0]
+"""
+
 class TestPSParse(unittest.TestCase):
 
     post_all_walls = "[(LEFT-WALL)(Dad[!])(was.v-d)(not.e)(a)(parent.n)(before)(.)(RIGHT-WALL)]" \
@@ -140,6 +150,22 @@ class TestPSParse(unittest.TestCase):
         self.assertEqual(1.0, pm.completely_unparsed_ratio)
         self.assertEqual(0.0, pm.average_parsed_ratio)
 
+    # @unittest.skip
+    def test_parse_postscript_gutenchildren_bug(self):
+        """ test_parse_postscript """
+        # print(__doc__, sys.stderr)
+
+        options = 0
+        # options |= (BIT_RWALL | BIT_CAPS)
+        # options &= ~BIT_STRIP
+
+        tokens, links = parse_postscript(gutenberg_children_bug, options, sys.stdout)
+
+        pm = parse_metrics(tokens)
+
+        self.assertEqual(0.0, pm.completely_parsed_ratio)
+        self.assertEqual(0.0, pm.completely_unparsed_ratio)
+        self.assertEqual(0.9375, pm.average_parsed_ratio)
 
 if __name__ == '__main__':
     unittest.main()

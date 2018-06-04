@@ -1,0 +1,43 @@
+[
+  {
+    "component":"pre-cleaner",
+    "parameters": [
+      {
+        "input": "/akolonin/corp/russian1",
+        "output": "./cleaned",
+        "lowercase": "true"
+      }
+    ]
+  },
+  {
+    "component": "text-parser",
+    "parameters": [
+      {
+        "input": "./cleaned",
+        "output": "./parses",
+        "parsing_mode": "plain_mst"
+      }
+    ]
+  },
+  {
+    "component": "grammar-learner",
+    "parameters":[
+      {
+        "input": "./parses",
+        "output_grammar": "./grammar.dict",
+        "output_categories": "./cat_tree.txt",
+        "period": "true"
+      }
+    ]
+  },
+  {
+    "component": "grammar-tester",
+    "parameters": [
+      {
+        "input_grammar": "./grammar.dict",
+        "input_categories": "./cat_tree.txt",
+        "parse_format": "ull"
+      }
+    ]
+  }
+]

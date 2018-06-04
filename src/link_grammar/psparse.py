@@ -1,18 +1,14 @@
 import sys
 import re
 
-try:
-    from link_grammar.optconst import *
-
-except ImportError:
-    from optconst import *
+from .optconst import *
 
 """
     Utilities for parsing postscript notated tokens and links, returned by Link Grammar API method Linkage.postscript()
      
 """
 
-__all__ = ['strip_token', 'parse_tokens', 'parse_links', 'parse_postscript']
+__all__ = ['strip_token', 'parse_tokens', 'parse_links', 'parse_postscript', 'skip_lines', 'trim_garbage']
 
 __version__ = "1.0.0"
 
@@ -133,7 +129,7 @@ def parse_postscript(text: str, options: int, ofile) -> ([], []):
 
     p = re.compile('\[(\(.+?\)+?)\]\[(.*?)\]\[0\]', re.S)
 
-    m = p.match(text)
+    m = p.match(text.replace("\n", ""))
 
     if m is not None:
         tokens = parse_tokens(m.group(1), options)
@@ -147,3 +143,39 @@ def parse_postscript(text: str, options: int, ofile) -> ([], []):
         print(text, file=sys.stderr)
 
     return [], []
+
+def skip_lines(text: str, lines_to_skip: int) -> int:
+    """
+     Skip specified number of lines from the beginning of a text string.
+
+    :param text: Text string with zero or many '\n' in.
+    :param lines_to_skip: Number of lines to skip.
+    :return: Return position of the first character after the specified number of lines is skipped.
+    """
+    l = len(text)
+
+    pos = 0
+    cnt = lines_to_skip
+
+    while l and cnt:
+        if text[pos] == "\n":
+            cnt -= 1
+        pos += 1
+    return pos
+
+
+def trim_garbage(text: str) -> int:
+    """
+    Strip all characters from the end of string until ']' is reached.
+
+    :param text: Text string.
+    :return: Return position of a character following ']' or zero in case of a null string.
+    """
+    l = len(text)-1
+
+    while l:
+        if text[l] == "]":
+            return l+1
+        l -= 1
+
+    return 0

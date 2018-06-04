@@ -1,12 +1,13 @@
-try:
-    from link_grammar.parsemetrics import ParseQuality, ParseMetrics
 
-except ImportError:
-    from parsemetrics import ParseQuality, ParseMetrics
+from .parsemetrics import ParseQuality, ParseMetrics
+
 
 """
     Statistics estimation set of functions
 """
+
+__all__ = ['calc_stat', 'parse_metrics', 'calc_parse_quality', 'parse_quality']
+
 def calc_stat(tokens: list) -> (int, int, float):
     """
     Calculate percentage of successfully linked tokens. Token in square brackets considered to be unlinked.

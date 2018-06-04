@@ -1,4 +1,5 @@
 import os
+from .lgmisc import LGParseError
 
 __all__ = ['traverse_dir', 'create_dir', 'traverse_dir_tree']
 
@@ -55,24 +56,26 @@ def traverse_directory(root: str, file_ext: str, file_arg_list: list=None, dir_a
     :param is_recursive: Tells the function to recursively traverse directory tree if set to True, otherwise if False.
     :return:
     """
-    for entry in os.scandir(root):
+    with os.scandir(root) as scandir:
+        for entry in scandir:
 
-        if entry.is_dir():
-            is_traversing = is_recursive
+            if entry.is_dir():
+                is_traversing = is_recursive
 
-            if dir_arg_list is not None:
-                is_traversing = (is_traversing and dir_arg_list[0](entry.path, dir_arg_list[1:]))
+                if dir_arg_list is not None:
+                    is_traversing = (is_traversing and dir_arg_list[0](entry.path, dir_arg_list[1:]))
 
-            if is_traversing:
-                traverse_directory(entry.path, file_ext, file_arg_list, dir_arg_list, True)
+                if is_traversing:
+                    traverse_directory(entry.path, file_ext, file_arg_list, dir_arg_list, True)
 
-        elif entry.is_file() and (len(file_ext) < 1 or (len(file_ext) and entry.path.endswith(file_ext))):
-            if file_arg_list is not None:
-                try:
+            elif entry.is_file() and (len(file_ext) < 1 or (len(file_ext) and entry.path.endswith(file_ext))):
+                if file_arg_list is not None:
+                    # try:
                     file_arg_list[0](entry.path, file_arg_list[1:])
 
-                except LGParseError as err:
-                    print("LGParseError: " + str(err))
+                    # except LGParseError as err:
+                    #     print("LGParseError: " + str(err))
+
 
 
 
@@ -141,11 +144,11 @@ def create_dir(new_path) -> bool:
     try:
         # If the subdirectory does not exist in destination root create it.
         if not os.path.isdir(new_path):
-            print(new_path)
+            # print(new_path)
             os.mkdir(new_path)
 
     except OSError as err:
-        print("Error: " + str(err))
+        print("OSError: " + str(err))
         return False
 
     return True

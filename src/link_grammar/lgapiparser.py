@@ -2,19 +2,11 @@ import re
 import sys
 from linkgrammar import LG_DictionaryError, LG_Error, ParseOptions, Dictionary, Sentence
 
-try:
-    from link_grammar.optconst import *
-    from link_grammar.parsemetrics import ParseMetrics
-    from link_grammar.parsestat import parse_metrics, calc_stat
-    from link_grammar.psparse import parse_postscript
-    from link_grammar.lgparse import get_output_suffix, print_output
-
-except ImportError:
-    from optconst import *
-    from parsemetrics import ParseMetrics
-    from parsestat import parse_metrics, calc_stat
-    from psparse import parse_postscript
-    from lgparse import get_output_suffix, print_output
+from .optconst import *
+from .parsemetrics import ParseMetrics
+from .parsestat import parse_metrics, calc_stat
+from .psparse import parse_postscript
+from .lgmisc import get_output_suffix, print_output
 
 __all__ = ['parse_file_with_api']
 

@@ -1,17 +1,11 @@
 import sys
 import os
 
-try:
-    from link_grammar.dirhelper import traverse_dir
-    from link_grammar.parsestat import calc_parse_quality, parse_quality
-    from link_grammar.parsemetrics import ParseQuality
-    from src.link_grammar.lgparse import traverse_dir
 
-except:
-    from dirhelper import traverse_dir
-    from parsestat import calc_parse_quality, parse_quality
-    from parsemetrics import ParseQuality
-    from lgparse import traverse_dir
+from .dirhelper import traverse_dir
+from .parsestat import calc_parse_quality, parse_quality
+from .parsemetrics import ParseQuality
+from .lgparse import traverse_dir
 
 
 __all__ = ['load_ull_file', 'get_parses', 'eval_parses', 'compare_ull_files', 'EvalError']

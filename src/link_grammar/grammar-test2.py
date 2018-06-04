@@ -5,14 +5,8 @@ import os
 import getopt
 import platform
 
-try:
-    from link_grammar.lgparse import *
-    from link_grammar.cliutils import *
-    from link_grammar.optconst import *
-except ImportError:
-    from lgparse import *
-    from cliutils import *
-    from optconst import *
+from grammartest import parse_corpus_files, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
+from grammartest.optconst import *
 
 __version__ = "2.3.3"
 
@@ -53,6 +47,9 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
                                 test corpus sentences.
         -x  --no-left-wall      Exclude LEFT-WALL and period from statistics estimation.
         -s  --separate-stat     Generate separate statistics for each input file.
+        -R  --reference         Path to reference file if single file specified by option '-i' as input corpus or path
+                                to a directory with a number of reference files. In later case files with the same names
+                                are being compared.
     """
 
     dict_path       = None
@@ -62,18 +59,19 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
     linkage_limit   = None
     grammar_path    = None
     template_path   = None
+    reference_path  = None
 
     print("grammar-test2.py ver." + __version__)
     print("Python v." + platform.python_version())
 
     try:
-        opts, args = getopt.getopt(argv, "hcwrnubqexsLd:i:o:l:g:t:f:", ["help", "caps", "right-wall", "rm-dir",
+        opts, args = getopt.getopt(argv, "hcwrnubqexsLd:i:o:l:g:t:f:R:", ["help", "caps", "right-wall", "rm-dir",
                                                                         "no-strip", "ull-input", "best-linkage",
                                                                         "dict-path-recreate", "link-parser-exe",
                                                                         "no-left-wall", "separate-stat",
                                                                         "local-lang-dir", "dictionary=", "input=",
                                                                         "output=", "linkage-limit=", "grammar-dir=",
-                                                                        "template-dir=", "output-format"])
+                                                                        "template-dir=", "output-format", "reference"])
 
         for opt, arg in opts:
             if opt in ("-h", "--help"):
@@ -97,7 +95,6 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
                 options |= BIT_LG_EXE
             elif opt in ("-x", "--no-left-wall"):
                 options |= BIT_NO_LWALL
-                print("BIT_NO_LWALL is set")
             elif opt in ("-s", "--separate-stat"):
                 options |= BIT_SEP_STAT
             elif opt in ("-L", "--local-lang-dir"):
@@ -122,6 +119,8 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
                     options |= BIT_OUTPUT_POSTSCRIPT
                 elif form == "constituent":
                     options |= BIT_OUTPUT_CONST_TREE
+            elif opt in ("-R", "--reference"):
+                reference_path = handle_path_string(arg)
 
         # print("options=" + bin(options) + " (" + hex(options) + ")")
 
@@ -149,9 +148,12 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
     if dict_path is None:
         dict_path = "en"
 
+    # if reference_path is None:
+    #     reference_path
+
     try:
         parse_corpus_files(input_path, output_path, dict_path, grammar_path, template_path,
-                           linkage_limit, options)
+                           linkage_limit, options, reference_path)
 
     except LGParseError as err:
         print(str(err))

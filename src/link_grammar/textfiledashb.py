@@ -1,34 +1,6 @@
-import sys
-from abc import ABCMeta, abstractmethod
 
-try:
-    from link_grammar.parsemetrics import ParseMetrics, ParseQuality
-except ImportError:
-    from parsemetrics import ParseMetrics, ParseQuality
-
-DASH_UPDATE_PARSEABILITY = 1
-DASH_UPDATE_PARSEQUALITY = 2
-DASH_UPDATE_ALL = DASH_UPDATE_PARSEABILITY | DASH_UPDATE_PARSEQUALITY
-
-
-class DashboardError(Exception):
-    pass
-
-
-class AbstractDashboardClient(metaclass=ABCMeta):
-    """ Base class for publishing parse results """
-    @abstractmethod
-    def set_cell_by_indexes(self, row_index: int, col_index: int, value: object):
-        pass
-
-    @abstractmethod
-    def set_cell_by_names(self, row_name: str, col_name: str, value: object):
-        pass
-
-    @abstractmethod
-    def update_dashboard(self):
-        """ Update dashboard values """
-        pass
+from .parsemetrics import ParseMetrics, ParseQuality
+from .absclient import AbstractDashboardClient, DashboardError
 
 
 class TextFileDashboard(AbstractDashboardClient):

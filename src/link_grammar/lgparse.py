@@ -8,99 +8,22 @@ import sys
 import re
 import os
 import shutil
-# from linkgrammar import LG_Error, Sentence, ParseOptions, Dictionary
 
-try:
-    from link_grammar.dirhelper import *
-    from link_grammar.psparse import parse_postscript
-    from link_grammar.optconst import *
-    from link_grammar.parsestat import calc_stat
-    from link_grammar.parsemetrics import ParseMetrics
-    from link_grammar.inprocparser import *
-    from link_grammar.lgapiparser import *
-
-except ImportError:
-    from dirhelper import *
-    from psparse import parse_postscript
-    from optconst import *
-    from parsestat import calc_stat
-    from parsemetrics import ParseMetrics
-    from inprocparser import *
-    from lgapiparser import *
+from .dirhelper import *
+from .optconst import *
+from .parsemetrics import ParseMetrics
+from .inprocparser import *
+from .lgapiparser import *
+from .lgmisc import LGParseError
 
 
-__all__ = ['parse_corpus_files', 'get_output_suffix', 'print_output',
-           'LG_DICT_PATH', 'traverse_dir', 'create_dir', 'LGParseError'
-           ]
+__all__ = ['parse_corpus_files', 'LG_DICT_PATH', 'create_dir', 'create_grammar_dir', 'get_dir_name']
 
 __version__ = "2.1.3"
 
 LG_DICT_PATH = "/usr/local/share/link-grammar"
 
-LINK_1ST_TOKEN_INDEX = 0
-LINK_2ND_TOKEN_INDEX = 2
-LINK_1ST_TOKEN_TEXT = 1
-LINK_2ND_TOKEN_TEXT = 3
 
-class LGParseError(Exception):
-    pass
-
-
-def print_output(tokens:list, links:list, options:int, ofl):
-    """
-    Print links in ULL format to the output specified by 'ofl' variable.
-
-    :param tokens: List of tokens.
-    :param links: List of links.
-    :param ofl: Output file handle.
-    :return:
-    """
-    rwall_index = -1
-
-    i = 0
-
-    for token in tokens:
-        if not token.startswith("###"):
-            ofl.write(token + ' ')
-            # sys.stdout.write(token + ' ')
-        else:
-            if token.find("RIGHT-WALL") >= 0:
-                rwall_index = i
-        i += 1
-
-    ofl.write('\n')
-
-    for link in links:
-        # Filter out all links with LEFT-WALL if 'BIT_NO_LWALL' is set
-        if (options & BIT_NO_LWALL) and (link[LINK_1ST_TOKEN_INDEX] == 0 or link[LINK_2ND_TOKEN_INDEX] == 0):
-            continue
-
-        # Filter out all links with RIGHT-WALL if 'BIT_RWALL' is not set
-        if (options & BIT_RWALL) != BIT_RWALL and rwall_index >= 0 \
-                and (link[LINK_1ST_TOKEN_INDEX] == rwall_index or link[LINK_2ND_TOKEN_INDEX] == rwall_index):
-            continue
-
-        print(link[LINK_1ST_TOKEN_INDEX], link[LINK_1ST_TOKEN_TEXT],
-              link[LINK_2ND_TOKEN_INDEX], link[LINK_2ND_TOKEN_TEXT], file=ofl)
-
-    print('', file=ofl)
-
-
-def get_output_suffix(options: int) -> str:
-    """ Return output file name suffix depending on set options """
-
-    out_format = options & BIT_OUTPUT
-
-    suff = "2" if (options & BIT_LG_EXE) else ""
-
-    if (out_format & BIT_OUTPUT_CONST_TREE) == BIT_OUTPUT_CONST_TREE:
-        return ".tree" + suff
-    elif (out_format & BIT_OUTPUT_DIAGRAM) == BIT_OUTPUT_DIAGRAM:
-        return ".diag" + suff
-    elif (out_format & BIT_OUTPUT_POSTSCRIPT) == BIT_OUTPUT_POSTSCRIPT:
-        return ".post" + suff
-    else:
-        return ".ull" + suff
 
 
 def get_dir_name(file_name:str) -> (str, str):
@@ -277,10 +200,11 @@ def save_stat(stat_path:str, metrics: ParseMetrics):
 
 
 def parse_corpus_files(src_dir: str, dst_dir: str, dict_dir: str, grammar_dir: str, template_dir: str,
-                       linkage_limit: int, options: int) -> ParseMetrics:
+                       linkage_limit: int, options: int, reference_path: str) -> ParseMetrics:
     """
     Traverse corpus folder parsing each file in that folder and subfolders. The function recreates source directory
         structure within the destination one and stores parsing results in newly created directory structure.
+
     :param src_dir: Source directory with corpus files.
     :param dst_dir: Destination directory to store parsing result files.
     :param dict_dir: Path to dictionary directory or file
@@ -288,7 +212,10 @@ def parse_corpus_files(src_dir: str, dst_dir: str, dict_dir: str, grammar_dir: s
     :param template_dir: Path to template dictionary directory
     :param linkage_limit: Maximum number of linkages. Parammeter for LG API.
     :param options: Parse options bit field.
-    :return:
+    :param reference_path: Path to either reference file or directory with reference files depending on weather a file
+                            or directory is specified in src_dir. In later case files with the same names are being
+                            compared.
+    :return: Tuple of ParseMetrics and ParseQuality.
     """
     total_metrics = ParseMetrics()
 
@@ -299,6 +226,11 @@ def parse_corpus_files(src_dir: str, dst_dir: str, dict_dir: str, grammar_dir: s
         :param path: Path to .dict file
         :return:
         """
+
+        print("@@@@@@@@@@@@@@@@@@@@@@" + path)
+
+        return
+
         file_count = 0
 
         new_grammar_path = ""
@@ -313,6 +245,10 @@ def parse_corpus_files(src_dir: str, dst_dir: str, dict_dir: str, grammar_dir: s
             return create_dir(new_dst_dir + "/" + dir_path[len(src_dir) + 1:])
 
         def on_corpus_file(file_path):
+
+            # *******************************************************************
+            print("!!!!!! " + file_path)
+            # *******************************************************************
 
             ptr_parse = parse_file_with_lgp if (options & BIT_LG_EXE) else parse_file_with_api
 
@@ -404,12 +340,18 @@ def parse_corpus_files(src_dir: str, dst_dir: str, dict_dir: str, grammar_dir: s
     # def parse_corpus_files(src_dir, dst_dir, dict_dir, grammar_dir, template_dir, linkage_limit, options) -> int:
     # =============================================================================================================
     try:
+        # *******************************************
+        print("%%%%%%%%%%%%% " + dict_dir)
+        # *******************************************
+
         f_ptr = recreate_dict_struct if (options & BIT_DPATH_CREATE) == BIT_DPATH_CREATE else None
 
         # If dict_dir is the name of directory, hopefully with multiple .dict files to test
         #   then traverse the specified directory handling every .dict file in there.
         if os.path.isdir(dict_dir):
-            traverse_dir(dict_dir, ".dict", on_dict_file, f_ptr, True)
+            traverse_dir(dict_dir, ".dict", on_dict_file, None, True)
+            # traverse_dir(dict_dir, ".dict", on_dict_file, f_ptr, True)
+            # traverse_dir(dict_dir, ".dict", lambda x: print(x), f_ptr, True)
 
         # Otherwise dict_dir might be either .dict file name, or LG-shipped language name.
         else:

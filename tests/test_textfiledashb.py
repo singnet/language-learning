@@ -1,4 +1,6 @@
 import unittest
+import os
+
 try:
     from link_grammar.textfiledashb import TextFileDashboard, DashboardError
 
@@ -82,7 +84,20 @@ class TextFileDashTestCase(unittest.TestCase):
         self.assertEqual("column names are not set", str(ctx.exception))
 
     def test_get_col_index(self):
-        dboard = TextFileDashboard(2, 2, "dashboard.txt")
+        dboard = TextFileDashboard(2, 2, "test-data/temp/dashboard.txt")
+        dboard.set_col_names(["A", "B"])
+        self.assertEqual(0, dboard._get_col_index("A"))
+        self.assertEqual(1, dboard._get_col_index("B"))
+
+    def test_update_dashboard(self):
+        file_path = "test-data/temp/dashboard.txt"
+
+        try:
+            os.unlink(file_path)
+        except:
+            pass
+
+        dboard = TextFileDashboard(2, 2, file_path)
         dboard.set_col_names(["A", "B"])
         dboard.set_cell_by_indexes(0, 0, "00")
         dboard.set_cell_by_indexes(0, 1, "01")
@@ -90,8 +105,7 @@ class TextFileDashTestCase(unittest.TestCase):
         dboard.set_cell_by_indexes(1, 1, "11")
         dboard.update_dashboard()
 
-        self.assertEqual(0, dboard._get_col_index("A"))
-        self.assertEqual(1, dboard._get_col_index("B"))
+        self.assertTrue(os.path.isfile(file_path))
 
 
 if __name__ == '__main__':

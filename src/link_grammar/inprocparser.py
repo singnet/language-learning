@@ -1,22 +1,14 @@
 import sys
 from subprocess import PIPE, Popen
 
-try:
-    from link_grammar.optconst import *
-    from link_grammar.psparse import *
-    from link_grammar.parsestat import *
-    from src.link_grammar.lgparse import *
+from .optconst import *
+from .psparse import *
+from .parsestat import *
+from .parsemetrics import *
+from .lgparse import *
+from .lgmisc import *
 
-except ImportError:
-    # print("Import error!", file=sys.stderr)
-
-    from optconst import *
-    from psparse import *
-    from parsestat import *
-    from lgparse import *
-
-__all__ = ['parse_file_with_lgp'  # ,'parse_batch_ps_output'
-           ]
+__all__ = ['parse_file_with_lgp']
 
 
 class PSSentence:
@@ -84,6 +76,10 @@ def parse_batch_ps_output(text: str, lines_to_skip: int=5) -> list:
 
     pos = skip_lines(text, lines_to_skip)
     end = trim_garbage(text)
+
+#--------------------------------------
+    # print(text[pos:end])
+# --------------------------------------
 
     # Parse output to get sentences and linkages in postscript notation
     for sent in text[pos:end].split("\n\n"):
@@ -189,6 +185,8 @@ def handle_stream_output(text: str, linkage_limit: int, options: int, out_stream
     # Parse only if 'ull' output format is specified.
     if not (options & BIT_OUTPUT):
 
+        print("************************* ULL start***********************************")
+
         # Parse output into sentences and assotiate a list of linkages for each one of them.
         sentences = parse_batch_ps_output(text)
 
@@ -197,6 +195,10 @@ def handle_stream_output(text: str, linkage_limit: int, options: int, out_stream
         # Parse linkages and make statistics estimation
         for sent in sentences:
             linkage_count = 0
+
+            # ********************************************************************************
+            print(sent.text, sent.linkages)
+            # ********************************************************************************
 
             sent_metrics = ParseMetrics()
 
@@ -230,6 +232,8 @@ def handle_stream_output(text: str, linkage_limit: int, options: int, out_stream
             total_metrics /= float(sentence_count)
 
             assert total_metrics.average_parsed_ratio <= 1.0
+
+        print("************************* ULL end ***********************************")
 
     # If output format is other than ull then simply write text to the output stream.
     else:
