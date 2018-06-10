@@ -8,7 +8,8 @@ from .optconst import *
      
 """
 
-__all__ = ['strip_token', 'parse_tokens', 'parse_links', 'parse_postscript', 'skip_lines', 'trim_garbage']
+__all__ = ['strip_token', 'parse_tokens', 'parse_links', 'parse_postscript', 'skip_lines', 'trim_garbage',
+           'get_link_set', 'prepare_tokens']
 
 __version__ = "1.0.0"
 
@@ -37,16 +38,19 @@ def strip_token(token) -> str:
 
 def parse_tokens(txt, opt) -> list:
     """
-    Parse string of tokens
+    Parse string of tokens, taken from postscript notated LG parse output.
+    After several iterations it became obvious that all tokens should be kept in the original list in order to
+    avoid issues with links. All filtering necessary for ULL output is now done in print_output(). All filtering
+    necessary for parseability statistics estimation is done in prepare_tokens().
     :param txt: string token line extracted from postfix notation output string returned by Linkage.postfix()
             method.
     :param opt: bit mask option value (see parse_test() description for more details)
-    :return: list of tokes
+    :return: list of tokens
     """
-    toks = []
+    tokens = []
     start_pos = 1
     end_pos = txt.find(")")
-    token_count = 0
+
 
     while end_pos - start_pos > 0:
         token = txt[start_pos:end_pos:]
@@ -56,46 +60,100 @@ def parse_tokens(txt, opt) -> list:
 
         if token.find("-WALL") > 0:
 
-            if (token == "RIGHT-WALL" and (opt & BIT_RWALL) == BIT_RWALL) or \
-                (token == "LEFT-WALL" and not (opt & BIT_NO_LWALL)):
+            if token in ["RIGHT-WALL", "LEFT-WALL"]:
+                tokens.append(r"###" + token + r"###")
 
-                token = "###" + token + "###"
-                toks.append(token)
+            elif token in ["[RIGHT-WALL]", "[LEFT-WALL]"]:
+                tokens.append(r"###" + token[1:-1] + r"###")
+
+            # if token in ["RIGHT-WALL", "[RIGHT-WALL]"]:  # and (opt & BIT_RWALL) == BIT_RWALL):
+            #     tokens.append(r"###RIGHT-WALL###")
+            #
+            # elif token in ["LEFT-WALL", "[LEFT-WALL]"]:  # and not (opt & BIT_NO_LWALL)):
+            #     tokens.append(r"###LEFT-WALL###")
         else:
-            if token_count == 0:
-                toks.append(r"###LEFT-WALL###")
-                token_count += 1
+            if start_pos == 1:
+                tokens.append(r"###LEFT-WALL###")
 
             if opt & BIT_CAPS == 0:
                 token = token.lower()
 
-            toks.append(token)
+            tokens.append(token)
 
         start_pos = end_pos + 2
         end_pos = txt.find(")", start_pos)
-        token_count += 1
 
-    # print(toks)
-    return toks
+    return tokens
 
 
-def parse_links(txt, toks) -> list:
+def prepare_tokens(tokens: list, options: int) -> list:
+    """
+    Prepare (filter) list of tokens according to the options flags for statistics calculation.
+
+    :param tokens: Initial list of tokens obtained from parse_tokens().
+    :param options: Bit flags.
+    :return: Filtered list of tokens.
+    """
+    token_count = len(tokens)
+    first_token = 0
+    last_token = token_count - 1
+
+    if not token_count:
+        return tokens
+
+    if options & BIT_NO_LWALL:
+        if tokens[0].startswith(r"###") or tokens[0].startswith(r"[##"):
+            first_token += 1
+
+        # RIGHT-WALL is not needed if LEFT-WALL is stripped off
+        if tokens[last_token].startswith(r"###") or tokens[last_token].startswith(r"[##"):
+            last_token -= 1
+
+    if not (options & BIT_RWALL) and (tokens[last_token].startswith(r"###") or tokens[last_token].startswith(r"[##")):
+        last_token -= 1
+
+    if options & BIT_NO_PERIOD:
+        rw = tokens[last_token] if tokens[last_token].startswith(r"###") or tokens[last_token].startswith(r"[##") \
+                                else None
+
+        # Skip RIGHT-WALL and period or period in brackets if any
+        while last_token and tokens[last_token] in [r"[.]", r".", r"###RIGHT-WALL###", r"[###RIGHT-WALL###]"]:
+            last_token -= 1
+
+        # If both period and RIGHT-WALL were found
+        if rw is not None:
+            # RIGHT-WALL is added to the new list
+            return tokens[first_token:last_token+1] + [rw]
+
+    return tokens[first_token:last_token+1]
+
+
+def parse_links2(txt, toks, options) -> (list, list):
     """
     Parse links represented in postfix notation and prints them in OpenCog notation.
 
     :param txt: link list in postfix notation
     :param toks: list of tokens previously extracted from postfix notated output
-    :return: List of links in ULL format
+    :return: List of all links, list of links without LW and '.'
     """
     links = []
-    inc = 0
-
-    # # Add LEFT-WALL token if not already presented
-    # if not toks[0].startswith(r"###"):
-    #     toks.insert(0, r"###LEFT-WALL###")
-    #     inc = 1         # index increment to make sure the links are stay correct
+    qlinks = []
 
     token_count = len(toks)
+    tokens2skip = []
+
+    # if (options & BIT_NO_LWALL) == BIT_NO_LWALL:
+    if token_count > 0 and toks[0].startswith(r"##"):
+        tokens2skip.append(0)
+
+    if token_count > 1 and toks[token_count-1] == r"." or toks[token_count-1].startswith(r"##"):
+        tokens2skip.append(token_count-1)
+
+    if token_count > 2 and toks[token_count-2] == r".":
+        tokens2skip.append(token_count-2)
+
+    print(toks)
+    print(tokens2skip)
 
     start_pos = 1
     end_pos = txt.find("]")
@@ -106,11 +164,46 @@ def parse_links(txt, toks) -> list:
         mm = q.match(txt[start_pos:end_pos:])
 
         if mm is not None:
-            index1 = int(mm.group(1)) + inc
-            index2 = int(mm.group(2)) + inc
+            index1 = int(mm.group(1))
+            index2 = int(mm.group(2))
 
             if index2 < token_count:
-                links.append((index1, toks[index1], index2, toks[index2]))
+                links.append((index1, index2))
+
+                if index1 not in tokens2skip and index2 not in tokens2skip:
+                    qlinks.append((index1, index2))
+
+        start_pos = end_pos + 2
+        end_pos = txt.find("]", start_pos)
+
+    return links, qlinks
+
+
+def parse_links(txt, tokens) -> list:
+    """
+    Parse links represented in postfix notation and prints them in OpenCog notation.
+
+    :param txt: link list in postfix notation
+    :param tokens: list of tokens previously extracted from postfix notated output
+    :return: List of links in ULL format
+    """
+    links = []
+
+    token_count = len(tokens)
+
+    start_pos = 1
+    end_pos = txt.find("]")
+
+    q = re.compile('(\d+)\s(\d+)\s\d+\s\(.+\)')
+
+    while end_pos - start_pos > 0:
+        mm = q.match(txt[start_pos:end_pos:])
+
+        if mm is not None:
+            index1, index2 = int(mm.group(1)), int(mm.group(2))
+
+            if index2 < token_count:
+                links.append((index1, index2))
 
         start_pos = end_pos + 2
         end_pos = txt.find("]", start_pos)
@@ -134,15 +227,53 @@ def parse_postscript(text: str, options: int, ofile) -> ([], []):
     if m is not None:
         tokens = parse_tokens(m.group(1), options)
         links = parse_links(m.group(2), tokens)
-        sorted_links = sorted(links, key=lambda x: (x[0], x[2]))
 
-        return tokens, sorted_links
+        return tokens, links
 
     else:
         print("parse_postscript(): regex does not match!", file=sys.stderr)
         print(text, file=sys.stderr)
 
     return [], []
+
+def get_link_set(tokens: list, links: list, options: int) -> set:
+    """
+    Create link set from link list filtering out unnecessary links according to options bit flags.
+
+    :param tokens:  Token list.
+    :param links:   Link list.
+    :param options: Integer bit mask variable.
+    :return: Filtered set of links.
+    """
+    all_link_set = set(links)
+    exc_link_set = set()
+
+    # print(all_link_set)
+    # print(tokens[0])
+
+    token_count = len(tokens)
+
+    if token_count:
+        last_token = token_count - 1
+
+        if options & BIT_NO_LWALL and tokens[0].find("WALL") > -1:
+            exc_link_set |= set({(0, i) for i in range(1, token_count)})
+
+            if tokens[last_token].startswith(r"###"):
+                exc_link_set |= set({(i, last_token) for i in range(token_count)})
+
+        if options & BIT_NO_PERIOD:
+            if tokens[last_token].startswith(r"###"):
+                last_token -= 1
+
+            if tokens[last_token] == ".":
+                exc_link_set |= set({(i, last_token) for i in range(token_count)})
+
+        if len(exc_link_set):
+            return all_link_set - exc_link_set
+
+    return all_link_set
+
 
 def skip_lines(text: str, lines_to_skip: int) -> int:
     """

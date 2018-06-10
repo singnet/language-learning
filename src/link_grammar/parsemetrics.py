@@ -40,7 +40,7 @@ class ParseQuality():
     @staticmethod
     def text(stat) -> str:
         return  "Parse quality: {0:2.2f}%\n" \
-                "A total of {1:2.2f} links\n" \
+                "Average total links: {1:2.2f}\n" \
                 "Average ignored links: {2:2.2f}\n" \
                 "Average missing links: {3:2.2f}\n" \
                 "Average extra links:  {4:2.2f}".format(

@@ -29,7 +29,7 @@ def load_ull_file(filename):
     return data
 
 
-def get_parses(data, ignore_wall: bool=True):
+def get_parses(data, ignore_wall: bool=True, sort_parses: bool=True):
     """
         Separates parses from data into format:
         [
@@ -72,13 +72,14 @@ def get_parses(data, ignore_wall: bool=True):
                 continue
 
             # Only token indexes are added to the set
-            parse[PARSE_LINK_SET].add((link[0], link[2]))
+            parse[PARSE_LINK_SET].add((int(link[0]), int(link[2])))
             
     # Last parse should always be added to the list
     if len(parse) > 0:
         parses.append(parse)
 
-    parses.sort()
+    if sort_parses:
+        parses.sort()
 
     # print(parses, file=sys.stdout)
 

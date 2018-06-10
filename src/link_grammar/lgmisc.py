@@ -4,9 +4,7 @@ __all__ = ['get_output_suffix', 'print_output', 'LGParseError']
 
 
 LINK_1ST_TOKEN_INDEX = 0
-LINK_2ND_TOKEN_INDEX = 2
-LINK_1ST_TOKEN_TEXT = 1
-LINK_2ND_TOKEN_TEXT = 3
+LINK_2ND_TOKEN_INDEX = 1
 
 
 class LGParseError(Exception):
@@ -29,7 +27,7 @@ def get_output_suffix(options: int) -> str:
         return ".ull" + suff
 
 
-def print_output(tokens: list, links: list, options: int, ofl):
+def print_output(tokens: list, raw_links: list, options: int, ofl):
     """
     Print links in ULL format to the output specified by 'ofl' variable.
 
@@ -45,13 +43,14 @@ def print_output(tokens: list, links: list, options: int, ofl):
     for token in tokens:
         if not token.startswith("###"):
             ofl.write(token + ' ')
-            # sys.stdout.write(token + ' ')
         else:
             if token.find("RIGHT-WALL") >= 0:
                 rwall_index = i
         i += 1
 
     ofl.write('\n')
+
+    links = sorted(raw_links, key=lambda x: (x[0], x[1]))
 
     for link in links:
         # Filter out all links with LEFT-WALL if 'BIT_NO_LWALL' is set
@@ -63,7 +62,7 @@ def print_output(tokens: list, links: list, options: int, ofl):
                 and (link[LINK_1ST_TOKEN_INDEX] == rwall_index or link[LINK_2ND_TOKEN_INDEX] == rwall_index):
             continue
 
-        print(link[LINK_1ST_TOKEN_INDEX], link[LINK_1ST_TOKEN_TEXT],
-              link[LINK_2ND_TOKEN_INDEX], link[LINK_2ND_TOKEN_TEXT], file=ofl)
+        print(link[LINK_1ST_TOKEN_INDEX], tokens[link[LINK_1ST_TOKEN_INDEX]],
+              link[LINK_2ND_TOKEN_INDEX], tokens[link[LINK_2ND_TOKEN_INDEX]], file=ofl)
 
     print('', file=ofl)

@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
     
 """
 
-from .parsemetrics import ParseMetrics
+from .parsemetrics import ParseMetrics, ParseQuality
 
 
 __all__ = ['DashboardError', 'AbstractDashboardClient', 'AbstractConfigClient', 'AbstractGrammarTestClient',
@@ -58,7 +58,8 @@ class AbstractGrammarTestClient(metaclass=ABCMeta):
     Base class responsible for induced grammar testing.
     """
     @abstractmethod
-    def test(self, dict_path: str, corpus_path: str, output_path: str, reference_path: str) -> ParseMetrics:
+    def test(self, dict_path: str, corpus_path: str, output_path: str, reference_path: str) \
+            -> (ParseMetrics, ParseQuality):
         pass
 
 
@@ -67,5 +68,6 @@ class AbstractFileParserClient(metaclass=ABCMeta):
     Base class fot parsers
     """
     @abstractmethod
-    def parse(self, dict_path: str, corpus_path: str, output_path: str, options: int) -> ParseMetrics:
+    def parse(self, dict_path: str, corpus_path: str, output_path: str, ref_file: str, options: int) \
+            -> (ParseMetrics, ParseQuality):
         pass

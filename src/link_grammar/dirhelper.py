@@ -41,9 +41,11 @@ def traverse_dir_tree(root: str, file_ext: str, file_arg_list: list=None, dir_ar
         if not callable(dir_arg_list[0]):
             raise ValueError("The argument you specified in 'dir_arg_list[0]' field is not callable.")
 
-    # If all the arguments are correct start traversing
-    traverse_directory(root, file_ext, file_arg_list, dir_arg_list, is_recursive)
-
+    try:
+        # If all the arguments are correct start traversing
+        traverse_directory(root, file_ext, file_arg_list, dir_arg_list, is_recursive)
+    except Exception as err:
+        print("traverse_dir_tree(): ")
 
 def traverse_directory(root: str, file_ext: str, file_arg_list: list=None, dir_arg_list: list=None, is_recursive=False):
     """
@@ -73,8 +75,8 @@ def traverse_directory(root: str, file_ext: str, file_arg_list: list=None, dir_a
                     # try:
                     file_arg_list[0](entry.path, file_arg_list[1:])
 
-                    # except LGParseError as err:
-                    #     print("LGParseError: " + str(err))
+                    # except Exception as err:
+                    #     print("traverse_directory(): " + str(err))
 
 
 
