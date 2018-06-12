@@ -58,7 +58,8 @@ class LGInprocParser(AbstractFileParserClient):
 
             sent = sent.replace("\n", "")
 
-            # As it turned out a sentence may start from '[', so simple `sent.find("[")` will fail to tell sentence from postscript.
+            # As it turned out sentence may start from '[', so simple `sent.find("[")`
+            #   fails to tell sentence from postscript.
             post_start = sent.find("[(")
 
             sentence = sent[:post_start]
