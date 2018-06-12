@@ -54,7 +54,8 @@ def print_output(tokens: list, raw_links: list, options: int, ofl):
 
     for link in links:
         # Filter out all links with LEFT-WALL if 'BIT_NO_LWALL' is set
-        if (options & BIT_NO_LWALL) and (link[LINK_1ST_TOKEN_INDEX] == 0 or link[LINK_2ND_TOKEN_INDEX] == 0):
+        # if (options & BIT_NO_LWALL) and (link[LINK_1ST_TOKEN_INDEX] == 0 or link[LINK_2ND_TOKEN_INDEX] == 0):
+        if (options & BIT_ULL_NO_LWALL) and (link[LINK_1ST_TOKEN_INDEX] == 0 or link[LINK_2ND_TOKEN_INDEX] == 0):
             continue
 
         # Filter out all links with RIGHT-WALL if 'BIT_RWALL' is not set

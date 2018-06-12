@@ -1,5 +1,6 @@
 import sys
 from subprocess import PIPE, Popen
+from decimal import *
 
 from .absclient import AbstractFileParserClient
 from .optconst import *
@@ -34,7 +35,7 @@ class LGInprocParser(AbstractFileParserClient):
         self._ref_stream = None
         self._counter = 0
 
-    def _parse_batch_ps_output(self, text: str, lines_to_skip: int=5) -> list:
+    def _parse_batch_ps_output(self, text: str, lines_to_skip: int=4) -> list:
         """
         Parse postscript returned by link-parser executable in a form where each sentence is followed by zero
             or many postscript notated linkages. Postscript linkages are usually represented by three lines
@@ -57,7 +58,8 @@ class LGInprocParser(AbstractFileParserClient):
 
             sent = sent.replace("\n", "")
 
-            post_start = sent.find("[")
+            # As it turned out a sentence may start from '[', so simple `sent.find("[")` will fail to tell sentence from postscript.
+            post_start = sent.find("[(")
 
             sentence = sent[:post_start]
             cur_sent = PSSentence(sentence)
@@ -65,11 +67,14 @@ class LGInprocParser(AbstractFileParserClient):
             cur_sent.linkages.append(postscript)
 
             sentences.append(cur_sent)
+
             sent_set.add(cur_sent.text)
             sent_count += 1
 
-        assert len(sent_set) == sent_count, "Duplicate sentences!"
-        
+        # assert len(sent_set) == sent_count, "Duplicate sentences!"
+        if len(sent_set) != sent_count:
+            print("Duplicate sentences found!")
+
         return sentences
 
 
@@ -135,10 +140,6 @@ class LGInprocParser(AbstractFileParserClient):
 
                     linkage_count += 1
 
-                if linkage_count > 1:
-                    sent_metrics /= float(linkage_count)
-                    sent_quality /= float(linkage_count)
-
                 assert sent_metrics.average_parsed_ratio <= 1.0, "sent_metrics.average_parsed_ratio > 1.0"
                 assert sent_quality.quality <= 1.0, "sent_quality.quality > 1.0"
 
@@ -147,15 +148,15 @@ class LGInprocParser(AbstractFileParserClient):
 
                 sentence_count += 1
 
+            total_metrics.sentences = sentence_count
+
             if sentence_count > 1:
-                total_metrics /= float(sentence_count)
-                total_quality /= float(sentence_count)
+                total_quality /= Decimal(sentence_count)
 
         # If output format is other than ull then simply write text to the output stream.
         else:
             print(text, file=out_stream)
 
-        assert total_metrics.average_parsed_ratio <= 1.0, "total_metrics.average_parsed_ratio > 1.0"
         assert total_quality.quality <= 1.0, "total_quality.quality > 1.0"
 
         return total_metrics, total_quality

@@ -1,5 +1,6 @@
 import os
 import sys
+from decimal import *
 
 from .absclient import AbstractGrammarTestClient, AbstractDashboardClient, AbstractFileParserClient
 from .dirhelper import traverse_dir_tree, create_dir
@@ -75,7 +76,7 @@ class GrammarTester(AbstractGrammarTestClient):
         try:
             stat_file_handle = sys.stdout if stat_path is None else open(stat_path, "w")
 
-            assert metrics.average_parsed_ratio <= 1, "metrics.average_parsed_ratio > 1"
+            # assert metrics.average_parsed_ratio <= 1, "metrics.average_parsed_ratio > 1"
             assert quality.quality <= 1, "quality.quality = " + str(quality.quality)
 
             print(ParseMetrics.text(metrics), file=stat_file_handle)
@@ -159,8 +160,6 @@ class GrammarTester(AbstractGrammarTestClient):
             out_file = self._get_output_file_name(corpus_file_path, args)
             ref_file = self._get_ref_file_name(corpus_file_path, args)
 
-            # file_metrics, file_quality = ParseMetrics(), ParseQuality()
-
             file_metrics, file_quality = self._parser.parse(dict_path, corpus_file_path, out_file,
                                                             ref_file, self._options)
 
@@ -168,13 +167,13 @@ class GrammarTester(AbstractGrammarTestClient):
                 stat_name = out_file + ".stat"
                 stat_name += "2" if (self._options & BIT_LG_EXE) else ""
 
-                assert file_metrics.average_parsed_ratio <= 1.0, "on_corpus_file(): file_metrics.average_parsed_ratio > 1.0"
                 assert file_quality.quality <= 1.0, "on_corpus_file(): file_quality.quality > 1.0"
 
                 self._save_stat(stat_name, file_metrics, file_quality)
 
             self._total_metrics += file_metrics
             self._total_quality += file_quality
+
             self._total_files += 1
 
         except Exception as err:
@@ -210,13 +209,11 @@ class GrammarTester(AbstractGrammarTestClient):
                                                  [self._on_corp_dir, dest_path, lang_path] + args, True)
 
             if self._total_files > 1:
-                self._total_metrics /= float(self._total_files)
-                self._total_quality /= float(self._total_files)
+                self._total_quality /= Decimal(self._total_files)
 
             stat_suffix = "2" if (self._options & BIT_LG_EXE) == BIT_LG_EXE else ""
             stat_path = dest_path + "/" + os.path.split(corp_path)[1] + ".stat" + stat_suffix
 
-            assert self._total_metrics.average_parsed_ratio <= 1.0, "on_dict_file(): _total_metrics.average_parsed_ratio > 1.0"
             assert self._total_quality.quality <= 1.0, "on_dict_file(): _total_quality.quality > 1.0"
 
             self._save_stat(stat_path, self._total_metrics, self._total_quality)

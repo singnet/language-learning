@@ -6,19 +6,23 @@ from link_grammar.optconst import *
 
 # dict = "/home/alex/data/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period"
 # dict = "/usr/local/share/link-grammar/en"
-# dict = "en"
-dict = "poc-turtle"
+dict = "en"
+# dict = "poc-turtle"
 
 # corp = "/home/alex/data/corpora"
 # corp = "/home/alex/data/poc-english/poc_english_noamb.txt"
 # corp = "/home/alex/data/corpora/Children_Gutenberg_cleaned/pg24878.txt_split_default"
 # corp = "/var/tmp/lang-learn/pg24878.txt_split_default"
-corp = "/home/alex/data/corpora/poc-english-multi"
+corp = "/home/alex/data/corpora/cleaned_Gutenberg_Children/pg24878.txt_headless_split_e"
+# corp = "/home/alex/data/corpora/cleaned_Gutenberg_Children/25301-0.txt_headless_split_e"
+# corp = "/home/alex/data/corpora/cleaned_Gutenberg_Children"
+# corp = "/home/alex/data/corpora/poc-english-multi"
 # corp = "/home/alex/data/corpora/poc-english/poc_english.txt"
 
 # dest = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period"
-dest = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22"
-# dest = "/home/alex/data2/parses"
+# dest = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22"
+# dest = "/home/alex/data2/parses/cleaned_Gutenberg_Children"
+dest = "/home/alex/data2/parses"
 # dest = "/var/tmp/lang-learn"
 
 tmpl = "/home/alex/data/dict/poc-turtle"
@@ -40,7 +44,7 @@ class GrammarTesterTestCase(unittest.TestCase):
         print(pm.text(pm))
 
         # self.assertEqual(25, gt._total_dicts)
-        self.assertEqual(0.0, pm.average_parsed_ratio)
+        self.assertEqual(88, pm.sentences)
 
 if __name__ == '__main__':
     unittest.main()
