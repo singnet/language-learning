@@ -1,0 +1,32 @@
+package:
+  name: link-grammar-minisat-bundled
+  version: "5.4.4"
+
+source:
+  url: https://www.abisource.com/downloads/link-grammar/5.4.4/link-grammar-5.4.4.tar.gz
+
+build:
+  number: 0
+
+requirements:
+  build:
+#    - make
+#    - m4
+#    - gcc
+#    - autoconf
+##    - autoconf-archive
+#    - pkg-config
+#    - flex
+#    - ant
+#    - graphviz
+  run:
+    -  libgcc
+#    -  geos
+#    -  proj4
+#    -  json-c
+#    -  libxml2
+#    -  postgresql >=9.1
+
+about:
+  home: https://www.abisource.com/projects/link-grammar/
+  license: GPL2
