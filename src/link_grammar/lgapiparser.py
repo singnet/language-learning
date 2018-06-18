@@ -3,256 +3,156 @@ import sys
 from linkgrammar import LG_DictionaryError, LG_Error, ParseOptions, Dictionary, Sentence
 
 from .optconst import *
-from .parsemetrics import ParseMetrics
-from .parsestat import parse_metrics, calc_stat
-from .psparse import parse_postscript
+from .parsemetrics import ParseMetrics, ParseQuality
+from .parsestat import parse_metrics, parse_quality
+from .psparse import parse_postscript, prepare_tokens, get_link_set
 from .lgmisc import get_output_suffix, print_output
+from .absclient import AbstractFileParserClient
+from .parsevaluate import load_ull_file, get_parses
 
-__all__ = ['parse_file_with_api']
 
+__all__ = ['LGApiParser']
 
-def parse_file_with_api(dict_path: str, corpus_path: str, output_path: str, linkage_limit: int, options: int) \
-        -> ParseMetrics:
-    """
-    Link parser invocation routine.
 
-    :param dict_path: name or path to the dictionary
-    :param corpus_path: path to the test text file
-    :param output_path: output file path
-    :param linkage_limit: maximum number of linkages LG may return when parsing a sentence
-    :param options: bit field. Use bit mask constants to set or reset one or multiple bits:
-                BIT_CAPS  = 0x01    Keep capitalized letters in tokens untouched if set,
-                                    make all lowercase otherwise.
-                BIT_RWALL = 0x02    Keep all links with RIGHT-WALL if set, ignore them otherwise.
-                BIT_STRIP = 0x04    Strip off token suffixes if set, remove them otherwise.
-    :return: ParseMetrics instance.
-    """
+class LGApiParser(AbstractFileParserClient):
 
-    input_file_handle = None
-    output_file_handle = None
+    def __init__(self, limit: int=1000):
+        self._linkage_limit = limit
 
-    # Sentence statistics variables
-    total_metrics = ParseMetrics()
+    def parse(self, dict_path: str, corpus_path: str, output_path: str, ref_path: str, options: int) \
+            -> (ParseMetrics, ParseQuality):
+        """
+        Link Grammar API parser invokation routine.
 
-    line_count = 0                  # number of sentences in the corpus
+        :param dict_path:       Dictionary file or directory path.
+        :param corpus_path:     Corpus file or directory path.
+        :param output_path:     Output file or directory path.
+        :param ref_path:        Reference file or directory path.
+        :param options:         Bit field. See `optconst.py` for details
+        :return:                Tuple (ParseMetrics, ParseQuality)
+        """
+        input_file_handle = None
+        output_file_handle = None
 
-    print("Info: Parsing a corpus file: '" + corpus_path + "'")
-    print("Info: Using dictionary: '" + dict_path + "'")
+        ref_parses = []
 
-    if output_path is not None:
-        print("Info: Parses are saved in: '" + output_path+get_output_suffix(options) + "'")
-    else:
-        print("Info: Output file name is not specified. Parses are redirected to 'stdout'.")
+        # Sentence statistics variables
+        total_metrics, total_quality = ParseMetrics(), ParseQuality()
 
-    try:
-        link_line = re.compile(r"\A[0-9].+")
+        sentence_count = 0                  # number of sentences in the corpus
 
-        po = ParseOptions(min_null_count=0, max_null_count=999)
-        po.linkage_limit = linkage_limit
+        print("Info: Parsing a corpus file: '" + corpus_path + "'")
+        print("Info: Using dictionary: '" + dict_path + "'")
 
-        di = Dictionary(dict_path)
+        if output_path is not None:
+            print("Info: Parses are saved in: '" + output_path+get_output_suffix(options) + "'")
+        else:
+            print("Info: Output file name is not specified. Parses are redirected to 'stdout'.")
 
-        input_file_handle = open(corpus_path)
-        output_file_handle = sys.stdout if output_path is None else open(output_path+get_output_suffix(options), "w")
+        try:
+            if options & BIT_PARSE_QUALITY and ref_path is not None:
+                try:
+                    data = load_ull_file(ref_path)
+                    ref_parses = get_parses(data, (options & BIT_NO_LWALL) == BIT_NO_LWALL, False)
 
-        for line in input_file_handle:
+                except Exception as err:
+                    print("Exception: " + str(err))
 
-            # Filter out links when ULL parses are used as input
-            if options & BIT_ULL_IN > 0 and link_line.match(line):
-                continue
+            link_line = re.compile(r"\A[0-9].+")
 
-            # Skip empty lines to get proper statistics estimation and skip commented lines
-            if len(line.strip()) < 1 or line.startswith("#"):
-                continue
+            po = ParseOptions(min_null_count=0, max_null_count=999)
+            po.linkage_limit = self._linkage_limit
 
-            sent = Sentence(line, di, po)
-            linkages = sent.parse()
+            di = Dictionary(dict_path)
 
-            sent_metrics = ParseMetrics()
-            linkage_count = 0
+            input_file_handle = open(corpus_path)
+            output_file_handle = sys.stdout if output_path is None \
+                                            else open(output_path+get_output_suffix(options), "w")
 
-            for linkage in linkages:
+            for line in input_file_handle:
 
-                # Only the first linkage is counted.
-                if linkage_count == 1:
-                    break
+                # Filter out links when ULL parses are used as input
+                if options & BIT_ULL_IN > 0 and link_line.match(line):
+                    continue
 
-                tokens, links = parse_postscript(linkage.postscript().replace("\n", ""), options, output_file_handle)
+                # Skip empty lines to get proper statistics estimation and skip commented lines
+                if len(line.strip()) < 1:  # or line.startswith("#"):
+                    continue
 
-                if not (options & BIT_OUTPUT):
-                    print_output(tokens, links, options, output_file_handle)
+                # Tokenize and parse the sentence
+                sent = Sentence(line, di, po)
+                linkages = sent.parse()
 
-                elif (options & BIT_OUTPUT_DIAGRAM) == BIT_OUTPUT_DIAGRAM:
-                    print(linkage.diagram(), file=output_file_handle)
+                sent_metrics, sent_quality = ParseMetrics(), ParseQuality()
+                linkage_count = 0
 
-                elif (options & BIT_OUTPUT_POSTSCRIPT) == BIT_OUTPUT_POSTSCRIPT:
-                    print(linkage.postscript(), file=output_file_handle)
+                for linkage in linkages:
 
-                elif (options & BIT_OUTPUT_CONST_TREE) == BIT_OUTPUT_CONST_TREE:
-                    print(linkage.constituent_tree(), file=output_file_handle)
+                    # Only the first linkage is counted.
+                    if linkage_count == 1:
+                        break
 
-                sent_metrics += parse_metrics(tokens)
+                    if (options & BIT_OUTPUT_DIAGRAM) == BIT_OUTPUT_DIAGRAM:
+                        print(linkage.diagram(), file=output_file_handle)
 
-                linkage_count += 1
+                    elif (options & BIT_OUTPUT_POSTSCRIPT) == BIT_OUTPUT_POSTSCRIPT:
+                        print(linkage.postscript(), file=output_file_handle)
 
-            if linkage_count > 1:
-                sent_metrics /= linkage_count
+                    elif (options & BIT_OUTPUT_CONST_TREE) == BIT_OUTPUT_CONST_TREE:
+                        print(linkage.constituent_tree(), file=output_file_handle)
 
-            if not linkage_count:
-                sent_metrics.completely_unparsed_ratio += 1
+                    elif not (options & BIT_OUTPUT):
 
-            total_metrics += sent_metrics
-            line_count += 1
+                        tokens, links = parse_postscript(linkage.postscript().replace("\n", ""), options,
+                                                         output_file_handle)
 
-        if line_count > 1:
-            total_metrics /= line_count
+                        # Print ULL formated parses
+                        print_output(tokens, links, options, output_file_handle)
 
-        # Prevent interleaving "Dictionary close" messages
-        ParseOptions(verbosity=0)
+                        # Calculate parseability
+                        sent_metrics += parse_metrics(prepare_tokens(tokens, options))
 
-    except LG_DictionaryError as err:
-        print("LG_DictionaryError: " + str(err))
+                        # Calculate parse quality if the option is set
+                        if options & BIT_PARSE_QUALITY and len(ref_parses):
+                            sent_quality += parse_quality(get_link_set(tokens, links, options),
+                                                          ref_parses[sentence_count][1])
 
-    except LG_Error as err:
-        print("LG_Error: " + str(err))
+                    linkage_count += 1
 
-    except IOError as err:
-        print("IOError: " + str(err))
+                assert sent_metrics.average_parsed_ratio <= 1.0, "sent_metrics.average_parsed_ratio > 1.0"
+                assert sent_quality.quality <= 1.0, "sent_quality.quality > 1.0"
 
-    except FileNotFoundError as err:
-        print("FileNotFoundError: " + str(err))
+                total_metrics += sent_metrics
+                total_quality += sent_quality
 
-    finally:
-        if input_file_handle is not None:
-            input_file_handle.close()
+                # if not linkage_count:
+                #     sent_metrics.completely_unparsed_ratio += 1
 
-        if output_file_handle is not None and output_file_handle != sys.stdout:
-            output_file_handle.close()
+                sentence_count += 1
 
-        return total_metrics
+            total_metrics.sentences = sentence_count
+            total_quality.sentences = sentence_count
 
+            # Prevent interleaving "Dictionary close" messages
+            ParseOptions(verbosity=0)
 
-def parse_file_with_api0(dict_path, corpus_path, output_path, linkage_limit, options) \
-        -> (float, float, float):
-    """
-    Link parser invocation routine.
+        except LG_DictionaryError as err:
+            print("LG_DictionaryError: " + str(err))
 
-    :param dict_path: name or path to the dictionary
-    :param corpus_path: path to the test text file
-    :param output_path: output file path
-    :param linkage_limit: maximum number of linkages LG may return when parsing a sentence
-    :param options: bit field. Use bit mask constants to set or reset one or multiple bits:
-                BIT_CAPS  = 0x01    Keep capitalized letters in tokens untouched if set,
-                                    make all lowercase otherwise.
-                BIT_RWALL = 0x02    Keep all links with RIGHT-WALL if set, ignore them otherwise.
-                BIT_STRIP = 0x04    Strip off token suffixes if set, remove them otherwise.
-    :return: tuple (float, float, float):
-                - percentage of totally parsed sentences;
-                - percentage of completely unparsed sentences;
-                - percentage of parsed sentences;
-    """
+        except LG_Error as err:
+            print("LG_Error: " + str(err))
 
-    input_file_handle = None
-    output_file_handle = None
+        except IOError as err:
+            print("IOError: " + str(err))
 
-    # Sentence statistics variables
-    sent_full = 0                   # number of fully parsed sentences
-    sent_none = 0                   # number of completely unparsed sentences
-    sent_stat = 0.0                 # average value of parsed sentences (linkages)
+        except FileNotFoundError as err:
+            print("FileNotFoundError: " + str(err))
 
-    line_count = 0                  # number of sentences in the corpus
+        finally:
+            if input_file_handle is not None:
+                input_file_handle.close()
 
-    print("Info: Parsing a corpus file: '" + corpus_path + "'")
-    print("Info: Using dictionary: '" + dict_path + "'")
+            if output_file_handle is not None and output_file_handle != sys.stdout:
+                output_file_handle.close()
 
-    if output_path is not None:
-        print("Info: Parses are saved in: '" + output_path+get_output_suffix(options) + "'")
-    else:
-        print("Info: Output file name is not specified. Parses are redirected to 'stdout'.")
-
-    try:
-        link_line = re.compile(r"\A[0-9].+")
-
-        po = ParseOptions(min_null_count=0, max_null_count=999)
-        po.linkage_limit = linkage_limit
-
-        di = Dictionary(dict_path)
-
-        input_file_handle = open(corpus_path)
-        output_file_handle = sys.stdout if output_path is None else open(output_path+get_output_suffix(options), "w")
-
-        for line in input_file_handle:
-
-            # Filter out links when ULL parses are used as input
-            if options & BIT_ULL_IN > 0 and link_line.match(line):
-                continue
-
-            # Skip empty lines to get proper statistics estimation and skip commented lines
-            if len(line.strip()) < 1 or line.startswith("#"):
-                continue
-
-            sent = Sentence(line, di, po)
-            linkages = sent.parse()
-
-            # Number of linkages taken in statistics estimation
-            linkage_countdown = 1
-
-            temp_full = 0
-            temp_none = 0
-            temp_stat = 0.0
-
-            for linkage in linkages:
-#=============================================================================================================
-                if (options & BIT_OUTPUT_DIAGRAM) == BIT_OUTPUT_DIAGRAM:
-                    print(linkage.diagram(), file=output_file_handle)
-
-                elif (options & BIT_OUTPUT_POSTSCRIPT) == BIT_OUTPUT_POSTSCRIPT:
-                    print(linkage.postscript(), file=output_file_handle)
-
-                elif (options & BIT_OUTPUT_CONST_TREE) == BIT_OUTPUT_CONST_TREE:
-                    print(linkage.constituent_tree(), file=output_file_handle)
-
-                tokens, links = parse_postscript(linkage.postscript().replace("\n", ""), options, output_file_handle)
-
-                if not (options & BIT_OUTPUT):
-                    print_output(tokens, links, options, output_file_handle)
-
-                (f, n, s) = calc_stat(tokens)
-
-                if linkage_countdown:
-                    temp_full += f
-                    temp_none += n
-                    temp_stat += s
-                    linkage_countdown -= 1
-
-            if len(linkages) > 0:
-                sent_full += temp_full
-                sent_none += temp_none
-                sent_stat += temp_stat / float(len(linkages))
-            else:
-                sent_none += 1
-
-            line_count += 1
-
-        # Prevent interleaving "Dictionary close" messages
-        ParseOptions(verbosity=0)
-
-    except LG_Error as err:
-        print(str(err))
-
-    except IOError as err:
-        print(str(err))
-
-    except FileNotFoundError as err:
-        print(str(err))
-
-    finally:
-        if input_file_handle is not None:
-            input_file_handle.close()
-
-        if output_file_handle is not None and output_file_handle != sys.stdout:
-            output_file_handle.close()
-
-        return (0.0, 0.0, 0.0) if line_count == 0 else (float(sent_full) / float(line_count),
-                                                        float(sent_none) / float(line_count),
-                                                        sent_stat / float(line_count))
+            return total_metrics, total_quality

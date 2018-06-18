@@ -49,6 +49,11 @@ class ParseMetrics():
                                                                    stat.sentences
                                                                    ) )
 
+    def __eq__(self, other):
+        return  self.average_parsed_ratio == other.average_parsed_ratio and \
+                self.completely_parsed_ratio == other.completely_parsed_ratio and \
+                self.completely_unparsed_ratio == other.completely_unparsed_ratio
+
     def __iadd__(self, other):
         self.completely_parsed_ratio += other.completely_parsed_ratio
         self.completely_unparsed_ratio += other.completely_unparsed_ratio
@@ -70,6 +75,42 @@ class ParseQuality():
         self.extra = Decimal('0.0')
         self.ignored = Decimal('0.0')
         self.quality = Decimal('0.0')
+        self.sentences = Decimal('0.0')
+
+    @staticmethod
+    def avg_total_links(stat) -> Decimal:
+        if not stat.sentences:
+            return Decimal('0.0')
+
+        return stat.total / stat.sentences
+
+    @staticmethod
+    def avg_ignored_links(stat) -> Decimal:
+        if not stat.sentences:
+            return Decimal('0.0')
+
+        return stat.ignored / stat.sentences
+
+    @staticmethod
+    def avg_missing_links(stat) -> Decimal:
+        if not stat.sentences:
+            return Decimal('0.0')
+
+        return stat.missing / stat.sentences
+
+    @staticmethod
+    def avg_extra_links(stat) -> Decimal:
+        if not stat.sentences:
+            return Decimal('0.0')
+
+        return stat.extra / stat.sentences
+
+    @staticmethod
+    def parse_quality(stat) -> Decimal:
+        if not stat.sentences:
+            return Decimal('0.0')
+
+        return stat.quality / stat.sentences * Decimal('100.0')
 
     @staticmethod
     def text(stat) -> str:
@@ -77,12 +118,21 @@ class ParseQuality():
                 "Average total links: {1:2.2f}\n" \
                 "Average ignored links: {2:2.2f}\n" \
                 "Average missing links: {3:2.2f}\n" \
-                "Average extra links:  {4:2.2f}".format(
-                                                        stat.quality*Decimal("100.0"),
-                                                        stat.total,
-                                                        stat.ignored,
-                                                        stat.missing,
-                                                        stat.extra)
+                "Average extra links:  {4:2.2f}\n" \
+                "Tolal sentences: {5:2.2f}\n".format(
+                                                        stat.parse_quality(stat),
+                                                        stat.avg_total_links(stat),
+                                                        stat.avg_ignored_links(stat),
+                                                        stat.avg_missing_links(stat),
+                                                        stat.avg_extra_links(stat),
+                                                        stat.sentences)
+
+    def __eq__(self, other):
+        return  self.quality == other.quality and \
+                self.total == other.total and \
+                self.ignored == other.ignored and \
+                self.missing == other.missing and \
+                self.extra == other.extra
 
     def __iadd__(self, other):
         self.total += other.total
@@ -90,12 +140,13 @@ class ParseQuality():
         self.extra += other.extra
         self.ignored += other.ignored
         self.quality += other.quality
+        self.sentences += other.sentences
         return self
 
-    def __itruediv__(self, other:Decimal):
-        self.total /= other
-        self.missing /= other
-        self.extra /= other
-        self.ignored /= other
-        self.quality /= other
-        return self
+    # def __itruediv__(self, other:Decimal):
+    #     self.total /= other
+    #     self.missing /= other
+    #     self.extra /= other
+    #     self.ignored /= other
+    #     self.quality /= other
+    #     return self

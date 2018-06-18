@@ -4,7 +4,7 @@ __all__ = [
     'BIT_CAPS', 'BIT_RWALL', 'BIT_STRIP', 'BIT_OUTPUT', 'BIT_ULL_IN', 'BIT_RM_DIR',
     'BIT_OUTPUT_DIAGRAM', 'BIT_OUTPUT_POSTSCRIPT', 'BIT_OUTPUT_CONST_TREE', 'BIT_OUTPUT_ALL',
     'BIT_BEST_LINKAGE', 'BIT_DPATH_CREATE', 'BIT_LG_EXE', 'BIT_NO_LWALL', 'BIT_SEP_STAT', 'BIT_LOC_LANG',
-    'BIT_PARSE_QUALITY', 'BIT_NO_PERIOD', 'BIT_ULL_NO_LWALL'
+    'BIT_PARSE_QUALITY', 'BIT_NO_PERIOD', 'BIT_ULL_NO_LWALL', 'BIT_GRSUBDIR_CREATE'
 ]
 
 # Output format constants. If no bits set, ULL defacto format is used.
@@ -31,3 +31,5 @@ BIT_SEP_STAT            = (1<<13)           # Generate separate statistics for e
 BIT_LOC_LANG            = (1<<14)           # Keep language grammar directory localy in output directory
 BIT_PARSE_QUALITY       = (1<<15)           # Compare links of .ull file and reference file for parse quality estimation
 BIT_ULL_NO_LWALL        = (1<<16)           # Exclude LEFT-WALL from ULL output
+BIT_GRSUBDIR_CREATE     = (1<<17)           # Create subdirectories named after each grammar file if grammar directory
+                                            #   has multiple .dict files in it.

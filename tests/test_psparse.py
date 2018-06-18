@@ -33,7 +33,28 @@ cgch_bug_001 = \
 """
 [ illustration : " i tell you what , you stay right here ! "[(LEFT-WALL)([[])(illustration.n-u)(:.v)(")([i])(tell.v)(you)(what)(,)(you)(stay.v)(right.a)(here)(!)(")][[0 14 4 (Xp)][0 9 3 (Xx)][0 6 2 (WV)][0 2 0 (Wd)][2 3 0 (Ss)][3 6 1 (I*v)][3 4 0 (ZZZ)][6 8 1 (QI)][6 7 0 (Ox)][9 11 1 (WV)][9 10 0 (Wd)][10 11 0 (Sp)][11 12 0 (Pa)][12 13 0 (MVp)][14 15 0 (ZZZ)]][0]
 """
+# most people start at our web site which has the main pg search facility:
+alice_bug_001 = \
+"""
+[(most)(people)(start)(at)([our])(web)(site)([which])([has])([the])
+([main])([pg])([search])([facility:])]
+[[0 1 0 (C26C33)][1 2 0 (C33C54)][2 3 0 (C54C22)][3 6 1 (C22C17)][5 6 0 (C23C17)]]
+[0]
+"""
 
+# its business office is located at @number@ north @number@ west, salt lake city, ut @number@ , ( @number@ ) @number@ - @number@ , email business@pglaf.org.
+alice_bug_002 = \
+"""
+[(LEFT-WALL)(its)(business.n-u)(office.n)(is.v)(located.v-d)(at)(@number@[?].n)(north.a)(@number@[?].a)
+(west.a)(,)(salt.n-u)(lake.n)(city.n)(,)(ut[?].v)(@number@[?].a)(,)([(])
+(@number@[?].a)())(@number@[?].a)(-.r)(@number@[?].a)(,)(email.s)(business@pglaf.org[?].n)(.)]
+[[0 28 6 (Xp)][0 16 5 (WV)][0 11 4 (Xx)][0 5 3 (WV)][0 3 2 (Wd)][1 3 1 (Ds**x)][2 3 0 (AN)]
+[3 4 0 (Ss*s)][4 5 0 (Pv)][5 9 1 (Pa)][5 6 0 (MVp)][6 7 0 (Jp)][7 8 0 (Mp)][9 10 0 (MVp)]
+[11 15 3 (Xx)][15 16 0 (Wa)][11 14 2 (Wa)][12 14 1 (AN)][13 14 0 (AN)][16 27 5 (Os)][26 27 0 (AN)]
+[17 26 4 (A)][17 18 0 (Xc)][20 26 3 (A)][20 21 0 (Xc)][22 26 2 (A)][22 23 0 (Xc)][24 26 1 (A)]
+[24 25 0 (Xc)]]
+[0]
+"""
 
 class TestPSParse(unittest.TestCase):
 
@@ -82,18 +103,18 @@ class TestPSParse(unittest.TestCase):
         #                                         'parent', 'before', '.']))
 
         # Tokens without walls
-        tokens = parse_tokens(self.tokens_no_walls, options)
+        tokens = parse_tokens(self.tokens_no_walls, options)[0]
         self.assertTrue(self.cmp_lists(tokens, ['###LEFT-WALL###', 'eagle', 'has', 'wing', '.']))
 
         # RIGHT-WALL and CAPS, no STRIP
         options |= (BIT_RWALL | BIT_CAPS)
         options &= ~BIT_STRIP
-        tokens = parse_tokens(self.tokens_all_walls, options)
+        tokens = parse_tokens(self.tokens_all_walls, options)[0]
         self.assertTrue(self.cmp_lists(tokens, ['###LEFT-WALL###', 'Dad[!]', 'was.v-d', 'not.e', 'a',
                                                 'parent.n', 'before', '.', '###RIGHT-WALL###']))
 
         # Tokens without walls
-        tokens = parse_tokens(self.tokens_no_walls, options)
+        tokens = parse_tokens(self.tokens_no_walls, options)[0]
         # print(tokens, file=sys.stdout)
         self.assertTrue(self.cmp_lists(tokens, ['###LEFT-WALL###', 'eagle', 'has', 'wing', '.']))
 
@@ -104,7 +125,7 @@ class TestPSParse(unittest.TestCase):
         options |= BIT_CAPS | BIT_NO_LWALL
         # options |= (BIT_NO_LWALL | BIT_CAPS)
         # options &= (~(BIT_STRIP | BIT_RWALL))
-        tokens = parse_tokens(self.tokens_all_walls, options)
+        tokens = parse_tokens(self.tokens_all_walls, options)[0]
 
         # print(tokens)
 
@@ -115,7 +136,7 @@ class TestPSParse(unittest.TestCase):
     def test_parse_tokens_no_walls_no_period(self):
         options = 0
         options |= BIT_STRIP | BIT_NO_PERIOD | BIT_NO_LWALL
-        tokens = parse_tokens(self.tokens_all_walls, options)
+        tokens = parse_tokens(self.tokens_all_walls, options)[0]
 
         # print(tokens)
 
@@ -125,7 +146,7 @@ class TestPSParse(unittest.TestCase):
     def test_parse_tokens_rwall_no_period(self):
         options = 0
         options |= BIT_STRIP | BIT_NO_PERIOD | BIT_RWALL
-        tokens = parse_tokens(self.tokens_all_walls, options)
+        tokens = parse_tokens(self.tokens_all_walls, options)[0]
 
         # print(tokens)
 
@@ -136,7 +157,7 @@ class TestPSParse(unittest.TestCase):
     def test_parse_tokens_no_period(self):
         options = 0
         options |= BIT_STRIP | BIT_NO_PERIOD | BIT_RWALL
-        tokens = parse_tokens(self.tokens_no_walls, options)
+        tokens = parse_tokens(self.tokens_no_walls, options)[0]
 
         # print(tokens)
 
@@ -146,7 +167,7 @@ class TestPSParse(unittest.TestCase):
     def test_parse_no_period_if_no_period(self):
         options = 0
         options |= BIT_STRIP | BIT_NO_PERIOD | BIT_RWALL
-        tokens = parse_tokens(self.tokens_no_walls_no_period, options)
+        tokens = parse_tokens(self.tokens_no_walls_no_period, options)[0]
 
         # print(tokens)
 
@@ -157,7 +178,7 @@ class TestPSParse(unittest.TestCase):
         """ test_parse_links """
         # print(__doc__, sys.stderr)
 
-        links = parse_links(self.link_str, ['###LEFT-WALL###', 'dad', 'was', 'not', 'a', 'parent', 'before', '.'])
+        links = parse_links(self.link_str, ['###LEFT-WALL###', 'dad', 'was', 'not', 'a', 'parent', 'before', '.'], 0)
 
         # [0 7 2 (Xp)][0 1 0 (Wd)][1 2 0 (Ss*s)][2 5 1 (Osm)][2 3 0 (EBm)][4 5 0 (Ds**c)][5 6 0 (Mp)][7 8 0 (RW)]
         self.assertTrue(self.cmp_lists(links, [  (0, 7),
@@ -223,11 +244,44 @@ class TestPSParse(unittest.TestCase):
 
         tokens, links = parse_postscript(gutenberg_children_bug, options, sys.stdout)
 
+        self.assertEqual(18, len(tokens))
+
         pm = parse_metrics(tokens)
 
         self.assertEqual(0.0, pm.completely_parsed_ratio)
         self.assertEqual(0.0, pm.completely_unparsed_ratio)
-        self.assertEqual(0.9375, pm.average_parsed_ratio)
+        self.assertEqual(0.94117647, float(pm.average_parsed_ratio))
+        # self.assertEqual(16.0/17.0, pm.average_parsed_ratio)
+
+
+    # @unittest.skip
+    def test_parse_postscript_alice_bug_001(self):
+        """ test_parse_postscript """
+        # print(__doc__, sys.stderr)
+
+        options = 0
+        # options |= (BIT_RWALL | BIT_CAPS)
+        options &= ~BIT_STRIP
+
+        tokens, links = parse_postscript(alice_bug_001, options, sys.stdout)
+
+        self.assertEqual(15, len(tokens))
+
+        for link in links:
+            self.assertTrue(link[0]<15 and link[1]<15, str(link))
+
+        # self.assertEqual(["most", "people", "start", "at", "our", "web", "site", "which", "has", "the", "main", "pg",
+        #                   "search", "facility:"], tokens)
+
+    def test_parse_postscript_alice_bug_002(self):
+        options = 0
+        # options |= (BIT_RWALL | BIT_CAPS)
+        options &= ~BIT_STRIP
+
+        tokens, links = parse_postscript(alice_bug_002, options, sys.stdout)
+
+        self.assertEqual(29, len(tokens), tokens)
+
 
     def test_get_link_set(self):
         # post_all_walls = "[(LEFT-WALL)(Dad[!])(was.v-d)(not.e)(a)(parent.n)(before)(.)(RIGHT-WALL)]" \

@@ -3,9 +3,8 @@ import os
 
 
 from .dirhelper import traverse_dir
-from .parsestat import calc_parse_quality, parse_quality
+from .parsestat import parse_quality
 from .parsemetrics import ParseQuality
-from .lgparse import traverse_dir
 
 
 __all__ = ['load_ull_file', 'get_parses', 'eval_parses', 'compare_ull_files', 'EvalError']
@@ -24,8 +23,21 @@ def load_ull_file(filename):
     """
         Loads a data file
     """
-    with open(filename) as file:
-        data = file.readlines()
+    with open(filename, "r", encoding="utf-8-sig") as file:
+        data = []
+        line_count = 0
+
+        for line in file:
+            line = line.strip()
+
+            if len(line):
+                data.append(line.strip())
+                # print(line.strip())
+                line_count += 1
+
+        # print("line_count: " + str(line_count))
+
+        # data = file.readlines()
     return data
 
 
@@ -44,44 +56,56 @@ def get_parses(data, ignore_wall: bool=True, sort_parses: bool=True):
     """
     parses = []              # list of parses where each parse consists of two elements: sentence and the set of links
     parse = []
-    
+
+    line_count = 0
+
     for line in data:
 
-        # Suppose that sentence line always starts with a letter
-        if line[0].isalpha() or line[0] == "[":
-            
-            if len(parse) > 0:
-                parses.append(parse)
-                parse = []
-                
-            parse.append((((line.replace("[", "")).replace("]", "")).replace("\n", "")).strip())
-            parse.append(set())
-            parse.append(int(0))
+        line = line.strip()
+        line_len = len(line)
+        # print(line)
 
-        # Parses are always start with a digit
-        elif line[0].isdigit():
-            link = line.split()
-    
-            assert len(link) == 4
+        if line_len:
 
-            # Do not add LW and period links to the set if 'ignore_wall' is specified
-            if ignore_wall and (link[1] == "." or link[3] == "."
-                                or link[1].startswith(r"###") or link[3].startswith(r"###")):
+            # Parses are always start with a digit
+            if len(line) and line[0].isdigit():
+                link = line.split()
 
-                parse[PARSE_IGNORED] += 1   # count ignored links
-                continue
+                assert len(link) == 4, "The line appears not to be a link: " + line
 
-            # Only token indexes are added to the set
-            parse[PARSE_LINK_SET].add((int(link[0]), int(link[2])))
-            
+                # Do not add LW and period links to the set if 'ignore_wall' is specified
+                if ignore_wall and (link[1] == "." or link[3] == "." or link[1] == "[.]" or link[3] == "[.]"
+                                    or link[1].startswith(r"###") or link[3].startswith(r"###")):
+
+                    parse[PARSE_IGNORED] += 1  # count ignored links
+                    continue
+
+                # Only token indexes are added to the set
+                parse[PARSE_LINK_SET].add((int(link[0]), int(link[2])))
+
+            # Suppose that sentence line always starts with a letter
+            elif len(line):  # if line[0].isalpha() or line[0] == "[":
+
+                if len(parse) > 0:
+                    parses.append(parse)
+                    parse = []
+
+                parse.append((((line.replace("[", "")).replace("]", "")).replace("\n", "")).strip())
+                parse.append(set())
+                parse.append(int(0))
+
+                line_count += 1
+
     # Last parse should always be added to the list
     if len(parse) > 0:
         parses.append(parse)
 
-    if sort_parses:
-        parses.sort()
+    # if sort_parses:
+    #     parses.sort()
 
     # print(parses, file=sys.stdout)
+
+    # print("line_count: " + str(line_count))
 
     return parses
 

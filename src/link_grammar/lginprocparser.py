@@ -1,6 +1,6 @@
 import sys
 from subprocess import PIPE, Popen
-from decimal import *
+# from decimal import *
 
 from .absclient import AbstractFileParserClient
 from .optconst import *
@@ -8,7 +8,7 @@ from .psparse import *
 from .parsestat import *
 from .parsemetrics import *
 from .lgmisc import *
-from .evaluate import get_parses, load_ull_file, eval_parses
+from .parsevaluate import get_parses, load_ull_file
 
 __all__ = ['LGInprocParser']
 
@@ -70,24 +70,29 @@ class LGInprocParser(AbstractFileParserClient):
             sentences.append(cur_sent)
 
             sent_set.add(cur_sent.text)
+
+            # set_len = len(sent_set)
+
+            # if (set_len == len(sent_set)):
+            #     print(cur_sent.text)
+
             sent_count += 1
 
         # assert len(sent_set) == sent_count, "Duplicate sentences!"
         if len(sent_set) != sent_count:
-            print("Duplicate sentences found!")
+            print("Duplicate sentences found! len(sent_set): {},\t\tsent_count: {}".format(len(sent_set), sent_count))
 
         return sentences
 
-
-    def _handle_stream_output(self, text: str, options: int, out_stream, ref_path: str):
+    def _handle_stream_output(self, text: str, options: int, out_stream, ref_path: str) -> (ParseMetrics, ParseQuality):
         """
         Handle link-parser output stream text depending on options' BIT_OUTPUT field.
 
-        :param text: Stream output text.
-        :param linkage_limit: Number of linkages taken into account when statistics estimation is made.
-        :param options: Integer variable with multiple bit fields
-        :param out_stream: Output file stream handle.
-        :return:
+        :param text:        Stream output text.
+        :param options:     Integer variable with multiple bit fields.
+        :param out_stream:  Output file stream handle.
+        :param ref_path:    Reference file path.
+        :return:            Tuple (ParseMetrics, ParseQuality)
         """
         total_metrics, total_quality = ParseMetrics(), ParseQuality()
 
@@ -98,14 +103,14 @@ class LGInprocParser(AbstractFileParserClient):
 
             if options & BIT_PARSE_QUALITY and ref_path is not None:
                 try:
-                    ref_parses = get_parses(load_ull_file(ref_path), options & BIT_NO_LWALL == BIT_NO_LWALL, False)
-                    # print(ref_parses[3])
+                    data = load_ull_file(ref_path)
+                    ref_parses = get_parses(data, (options & BIT_NO_LWALL) == BIT_NO_LWALL, False)
 
                 except Exception as err:
                     print("Exception: " + str(err))
 
             # Parse output into sentences and assotiate a list of linkages for each one of them.
-            sentences = self._parse_batch_ps_output(text)
+            sentences = self._parse_batch_ps_output(text, 5)
 
             sentence_count = 0
 
@@ -124,20 +129,19 @@ class LGInprocParser(AbstractFileParserClient):
                     # Parse postscript notated linkage and get two lists with tokens and links in return.
                     tokens, links = parse_postscript(lnkg, options, out_stream)
 
-                    # Print out links in ULL-format
-                    print_output(tokens, links, options, out_stream)
+                    try:
+                        # Print out links in ULL-format
+                        print_output(tokens, links, options, out_stream)
+                    except Exception as err:
+                        print(str(err) + " in print_output()")
 
                     # Calculate parseability statistics
                     sent_metrics += parse_metrics(prepare_tokens(tokens, options))
 
                     # Calculate parse quality if the option is set
                     if options & BIT_PARSE_QUALITY and len(ref_parses):
-                        temp_quality = parse_quality(get_link_set(tokens, links, options),
+                        sent_quality += parse_quality(get_link_set(tokens, links, options),
                                                       ref_parses[sentence_count][1])
-
-                        assert temp_quality.quality <= 1.0, "temp_quality.quality = " + str(temp_quality.quality)
-
-                        sent_quality += temp_quality
 
                     linkage_count += 1
 
@@ -150,36 +154,26 @@ class LGInprocParser(AbstractFileParserClient):
                 sentence_count += 1
 
             total_metrics.sentences = sentence_count
-
-            if sentence_count > 1:
-                total_quality /= Decimal(sentence_count)
+            total_quality.sentences = sentence_count
 
         # If output format is other than ull then simply write text to the output stream.
         else:
             print(text, file=out_stream)
 
-        assert total_quality.quality <= 1.0, "total_quality.quality > 1.0"
-
         return total_metrics, total_quality
-
 
     def parse(self, dict_path: str, corpus_path: str, output_path: str, ref_file: str, options: int) \
             -> (ParseMetrics, ParseQuality):
         """
         Link parser invocation routine. Runs link-parser executable in a separate process.
 
-        :param dict_path: name or path to the dictionary
-        :param corpus_path: path to the test text file
-        :param output_path: output file path
-        :param linkage_limit: maximum number of linkages LG may return when parsing a sentence
-        :param options: bit field. Use bit mask constants to set or reset one or multiple bits:
-                    BIT_CAPS  = 0x01    Keep capitalized letters in tokens untouched if set,
-                                        make all lowercase otherwise.
-                    BIT_RWALL = 0x02    Keep all links with RIGHT-WALL if set, ignore them otherwise.
-                    BIT_STRIP = 0x04    Strip off token suffixes if set, remove them otherwise.
-        :return: ParseMetrics instance.
+        :param dict_path:       Name or path to the dictionary.
+        :param corpus_path:     Path to the test text file.
+        :param output_path:     Output file path.
+        :param ref_file:        Reference file path.
+        :param options:         Bit mask representing parsing options.
+        :return:                Tuple (ParseMetrics, ParseQuality).
         """
-
         print("Info: Parsing a corpus file: '" + corpus_path + "'")
         print("Info: Using dictionary: '" + dict_path + "'")
 
@@ -193,22 +187,26 @@ class LGInprocParser(AbstractFileParserClient):
         else:
             print("Info: Reference file name is not specified. Parse quality is not calculated.")
 
-        reg_exp = "^\D.+$" if (options & BIT_ULL_IN) == BIT_ULL_IN else "^[^#].+$"
+        reg_exp = "^\D.+$" if (options & BIT_ULL_IN) == BIT_ULL_IN else "^.+$"  # "^[^#].+$"
 
         # Make command option list depending on the output format specified.
         if not (options & BIT_OUTPUT) or (options & BIT_OUTPUT_POSTSCRIPT):
-            cmd = ["link-parser", dict_path, "-echo=1", "-postscript=1", "-graphics=0", "-verbosity=0"]
+            cmd = ["link-parser", dict_path, "-echo=1", "-postscript=1", "-graphics=0", "-verbosity=0",
+                   "-limit="+str(self._linkage_limit)]
         elif options & BIT_OUTPUT_CONST_TREE:
-            cmd = ["link-parser", dict_path, "-echo=1", "-constituents=1", "-graphics=0", "-verbosity=0"]
+            cmd = ["link-parser", dict_path, "-echo=1", "-constituents=1", "-graphics=0", "-verbosity=0",
+                   "-limit="+str(self._linkage_limit)]
         else:
-            cmd = ["link-parser", dict_path, "-echo=1", "-graphics=1", "-verbosity=0"]
+            cmd = ["link-parser", dict_path, "-echo=1", "-graphics=1", "-verbosity=0",
+                   "-limit="+str(self._linkage_limit)]
 
         out_stream = None
         ret_metrics = ParseMetrics()
         ret_quality = ParseQuality()
 
         try:
-            out_stream = sys.stdout if output_path is None else open(output_path+get_output_suffix(options), "w")
+            out_stream = sys.stdout if output_path is None \
+                else open(output_path+get_output_suffix(options), "w", encoding="utf-8")
 
             with Popen(["grep", "-P", reg_exp, corpus_path], stdout=PIPE) as proc_grep, \
                  Popen(cmd, stdin=proc_grep.stdout, stdout=PIPE, stderr=PIPE) as proc_pars:
@@ -229,7 +227,8 @@ class LGInprocParser(AbstractFileParserClient):
                 #     self._counter += 1
 
                 # Take an action depending on the output format specified by 'options'
-                ret_metrics, ret_quality = self._handle_stream_output(raw.decode(), options, out_stream, ref_file)
+                ret_metrics, ret_quality = self._handle_stream_output(raw.decode("utf-8-sig"), options,
+                                                                      out_stream, ref_file)
 
         except LGParseError as err:
             print("LGParseError: " + str(err))
@@ -244,7 +243,7 @@ class LGInprocParser(AbstractFileParserClient):
             print("OSError: " + str(err))
 
         except Exception as err:
-            print("Exception: " + str(err))
+            print("parse(): Exception: " + str(err))
 
         finally:
             if out_stream is not None and out_stream != sys.stdout:

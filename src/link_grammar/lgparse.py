@@ -82,7 +82,7 @@ def create_grammar_dir(dict_file_path, grammar_path, template_path, options) -> 
     (template_dict_name, dict_path) = get_dir_name(dict_file_path)
 
     if dict_path is None:
-        raise LGParseError("Dictionary file name is expected to have proper notation.")
+        raise LGParseError("Dictionary file name is expected to have proper notation." + dict_file_path)
 
     dict_path = grammar_path + "/" + dict_path if dict_path is not None else dict_file_path
 

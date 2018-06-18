@@ -29,7 +29,7 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(0.8, pm1.completely_unparsed_ratio)
         self.assertEqual(1.0, pm1.average_parsed_ratio)
 
-    # @unittest.skip
+    @unittest.skip
     def test_pm_div(self):
         pm1 = ParseMetrics()
         pm1.completely_parsed_ratio = 1.0
@@ -76,6 +76,7 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(0.2, pq2.total)
         self.assertEqual(0.1, pq2.quality)
 
+    @unittest.skip
     def test_pq_div(self):
         pq1 = ParseQuality()
         pq1.missing = 0.8

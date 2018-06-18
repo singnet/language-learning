@@ -2,19 +2,22 @@ import os
 import sys
 from decimal import *
 
-from .absclient import AbstractGrammarTestClient, AbstractDashboardClient, AbstractFileParserClient
+from .absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
 from .dirhelper import traverse_dir_tree, create_dir
 from .parsemetrics import ParseMetrics, ParseQuality
-from .lgparse import get_dir_name, create_grammar_dir
-from .lgmisc import get_output_suffix
-
+from .lgparse import create_grammar_dir
 from .optconst import *
 
-# from grammartest import traverse_dir_tree, ParseMetrics, get_dir_name, create_grammar_dir, create_dir
+from .lginprocparser import LGInprocParser
+from .lgapiparser import LGApiParser
+
+
+__all__ = ['test_grammar', 'GrammarTester']
 
 
 class GrammarTestError(Exception):
     pass
+
 
 # on_corpus_file() argument list indexes
 # [dest_path, lang_path, dict_path, corpus_path, output_path, reference_path]
@@ -36,7 +39,7 @@ DICT_ARG_REFF = 3
 class GrammarTester(AbstractGrammarTestClient):
 
     def __init__(self, grmr: str, tmpl: str, limit: int, options: int, parser: AbstractFileParserClient,
-                 dboard: AbstractDashboardClient=None):
+                 evt_handler: AbstractStatEventHandler=None):
 
         if parser is None:
             raise GrammarTestError("GrammarTestError: 'parser' argument can not be None.")
@@ -44,11 +47,11 @@ class GrammarTester(AbstractGrammarTestClient):
         if not isinstance(parser, AbstractFileParserClient):
             raise GrammarTestError("GrammarTestError: 'parser' is not an instance of AbstractFileParserClient")
 
-        if not dboard is None and not isinstance(dboard, AbstractDashboardClient):
-            raise GrammarTestError("ArgumentError: 'parser' is not an instance of AbstractParser")
+        if evt_handler is not None and not isinstance(evt_handler, AbstractStatEventHandler):
+            raise GrammarTestError("ArgumentError: 'evt_handler' is not an instance of AbstractStatEventHandler")
 
         self._parser = parser
-        self._dboard = dboard
+        self._event_handler = evt_handler
         self._grammar_root = grmr
         self._template_dir = tmpl
         self._linkage_limit = limit
@@ -61,27 +64,26 @@ class GrammarTester(AbstractGrammarTestClient):
         self._total_dicts = 0
 
     @staticmethod
-    def _save_stat(stat_path: str, metrics: ParseMetrics, quality: ParseQuality):
+    def _save_stat(stat_path: str, metrics: ParseMetrics, quality: ParseQuality) -> None:
         """
         Save statistic estimation results into a file.
 
-        :param stat_path: Path to file.
-        :param full_ratio: Fully parsed sentences quantity to total number of sentences ratio.
-        :param none_ratio: Completely unparsed sentences quantity to total number of sentences ratio.
-        :param avrg_ratio: Average parse ratio.
-        :return:
+        :param stat_path:   Path to file.
+        :param metrics:     ParseMetrics class pointer.
+        :param quality:     ParseQulality class pointer.
+        :return:            None
         """
         stat_file_handle = None
 
         try:
-            stat_file_handle = sys.stdout if stat_path is None else open(stat_path, "w")
-
-            # assert metrics.average_parsed_ratio <= 1, "metrics.average_parsed_ratio > 1"
-            assert quality.quality <= 1, "quality.quality = " + str(quality.quality)
+            stat_file_handle = sys.stdout if stat_path is None else open(stat_path, "w", encoding="utf-8")
 
             print(ParseMetrics.text(metrics), file=stat_file_handle)
             print(ParseQuality.text(quality), file=stat_file_handle)
-            print("PQA:\t{0:2.2f}%".format(metrics.average_parsed_ratio*quality.quality*100), file=stat_file_handle)
+
+            print("PQA:\t{0:2.2f}%".format((metrics.average_parsed_ratio / metrics.sentences *
+                                            quality.quality / quality.sentences * Decimal('100.0'))
+                                            if metrics.sentences else 0.0), file=stat_file_handle)
 
         except IOError as err:
             print("IOError: " + str(err))
@@ -121,19 +123,10 @@ class GrammarTester(AbstractGrammarTestClient):
         :param args: List of arguments.
         :return: True if subdirectory in the destination path is successfully created, False otherwise.
         """
-        # print(corp_dir_path)
-        # print(args[CORP_ARG_DEST] + corp_dir_path[len(args[CORP_ARG_CORP]):])
-
         return create_dir(args[CORP_ARG_DEST] + corp_dir_path[len(args[CORP_ARG_CORP]):])
 
     def _get_output_file_name(self, corpus_file_path: str, args: list) -> str:
         return args[CORP_ARG_DEST] + "/" + os.path.split(corpus_file_path)[1]  # + get_output_suffix(self._options)
-        # if self._is_dir_corpus:
-        #     # Take corpus file name and append it to the destination path
-        #     return args[CORP_ARG_DEST] + "/" + os.path.split(corpus_file_path)[1] # + get_output_suffix(self._options)
-        # else:
-        #     # Take corpus file name and append it to the destination path
-        #     return args[CORP_ARG_DEST] + "/" + os.path.split(args[CORP_ARG_CORP])[1] # + get_output_suffix(self._options)
 
     def _get_ref_file_name(self, corpus_file_path: str, args: list):
         """ Return reference file path """
@@ -167,8 +160,6 @@ class GrammarTester(AbstractGrammarTestClient):
                 stat_name = out_file + ".stat"
                 stat_name += "2" if (self._options & BIT_LG_EXE) else ""
 
-                assert file_quality.quality <= 1.0, "on_corpus_file(): file_quality.quality > 1.0"
-
                 self._save_stat(stat_name, file_metrics, file_quality)
 
             self._total_metrics += file_metrics
@@ -193,7 +184,9 @@ class GrammarTester(AbstractGrammarTestClient):
         try:
             dict_path = os.path.split(dict_file_path)[0]
             corp_path = args[DICT_ARG_CORP]
-            dest_path = args[DICT_ARG_OUTP] + str(dict_path[len(args[DICT_ARG_DICT]):])
+            dest_path = args[DICT_ARG_OUTP]
+
+            dest_path += str(dict_path[len(args[DICT_ARG_DICT]):])
 
             # If BIT_LOC_LANG is set the language subdirectory is created in destination directory
             grmr_path = dest_path if self._options & BIT_LOC_LANG else self._grammar_root
@@ -208,24 +201,19 @@ class GrammarTester(AbstractGrammarTestClient):
                 traverse_dir_tree(corp_path, "", [self._on_corpus_file, dest_path, lang_path] + args,
                                                  [self._on_corp_dir, dest_path, lang_path] + args, True)
 
-            if self._total_files > 1:
-                self._total_quality /= Decimal(self._total_files)
+            if not self._options & BIT_OUTPUT:
+                stat_suffix = "2" if (self._options & BIT_LG_EXE) == BIT_LG_EXE else ""
+                stat_path = dest_path + "/" + os.path.split(corp_path)[1] + ".stat" + stat_suffix
 
-            stat_suffix = "2" if (self._options & BIT_LG_EXE) == BIT_LG_EXE else ""
-            stat_path = dest_path + "/" + os.path.split(corp_path)[1] + ".stat" + stat_suffix
+                self._save_stat(stat_path, self._total_metrics, self._total_quality)
 
-            assert self._total_quality.quality <= 1.0, "on_dict_file(): _total_quality.quality > 1.0"
+            if self._is_dir_dict and self._event_handler is not None:
+                names = dict_path[len(args[DICT_ARG_DICT])+1:].split("/")
 
-            self._save_stat(stat_path, self._total_metrics, self._total_quality)
+                self._event_handler.on_statistics(names, self._total_metrics, self._total_quality)
 
         except Exception as err:
             print("_on_dict_file(): "+str(err))
-
-        # if self._is_dir_dict: # and not self._dboard is None:
-        #     names = dict_path[len(args[DICT_ARG_DICT])+1:].split("/")[-2:]
-        #     print(names)
-
-            # self._dboard.set_cell_by_names(names[1].decode(), names[0].decode(), self._total_metrics.average_parsed_ratio*100)
 
         self._total_dicts += 1
 
@@ -248,10 +236,11 @@ class GrammarTester(AbstractGrammarTestClient):
 
         # print(self._is_dir_dict, self._is_dir_corpus, corpus_path)
 
-        if not reference_path is None:
-            if self._is_dir_corpus and not os.path.isdir(reference_path):
-                raise GrammarTestError("GrammarTestError: If 'corpus_path' is a directory 'reference_path' should be an "
-                                       "existing directory path too.")
+        if reference_path is not None:
+            if self._is_dir_corpus:
+                if not os.path.isdir(reference_path):
+                    raise GrammarTestError("GrammarTestError: If 'corpus_path' is a directory 'reference_path' "
+                                           "should be an existing directory path too.")
             else:
                 if not os.path.isfile(reference_path):
                     raise GrammarTestError("GrammarTestError: If 'corpus_path' is a file 'reference_path' should be an "
@@ -263,9 +252,11 @@ class GrammarTester(AbstractGrammarTestClient):
 
             # If dict_path is a directory then call on_dict_file for every .dict file found.
             if self._is_dir_dict:
-                traverse_dir_tree(dict_path, ".dict", [self._on_dict_file]+parse_args, [self._on_dict_dir]+parse_args,
-                                  # lambda : [self._on_dict_dir]+parse_args if self._options & BIT_DPATH_CREATE else [],
-                                  True)
+
+                traverse_dir_tree(dict_path, ".4.0.dict", [self._on_dict_file]+parse_args,
+                                  [self._on_dict_dir]+parse_args, True)
+
+                # lambda : [self._on_dict_dir]+parse_args if self._options & BIT_DPATH_CREATE else [],
 
             # Otherwise it can be either single .dict file name or name of LG preinstalled dictionary e.g. 'en'
             else:
@@ -283,17 +274,24 @@ class GrammarTester(AbstractGrammarTestClient):
             return self._total_metrics, self._total_quality
 
 
-# def parse_file_with_api(dict_path: str, corpus_path: str, output_path: str, linkage_limit: int, options: int) \
-#         -> ParseMetrics:
+def test_grammar(corpus_path: str, output_path: str, dict_path: str, grammar_path: str, template_path: str,
+                       linkage_limit: int, options: int, reference_path: str) -> (ParseMetrics, ParseQuality):
+    """
+    Test grammar(s) over specified corpus providing numerical estimation of parsing quality.
 
+    :param corpus_path:     Path to either corpus file or corpus directory.
+    :param output_path:     Path to a directory where all output files to be stored.
+    :param dict_path:       Path to either .dict file or to a directory with multiple .dict files.
+    :param grammar_path:    Root path where grammar subdirectories are created.
+    :param template_path:   Path to a grammar directory which is used as template when producing new grammar(s).
+    :param linkage_limit:   Linkage limit variable for Link Grammar API/link-parser
+    :param options:         Bit mask used as a single source of options.
+    :param reference_path:  Path to either reference file or a directory with reference files which is used for parse
+                            quality estimation.
+    :return: Tuple (ParseMetrics, ParseQuality)
+    """
+    parser = LGInprocParser(linkage_limit) if options & BIT_LG_EXE else LGApiParser(linkage_limit)
 
+    gt = GrammarTester(grammar_path, template_path, linkage_limit, options, parser)
 
-def parse_corpus(src_dir: str, dst_dir: str, dict_dir: str, grammar_dir: str, template_dir: str,
-                       linkage_limit: int, options: int, reference_path: str) -> ParseMetrics:
-
-    gt = GrammarTester(grammar_dir, template_dir, linkage_limit, options, None)
-
-    return gt.test(dict_dir, src_dir, dst_dir, reference_path)
-
-
-# parse_corpus(corp, dest, dict, grmr, tmpl, limit, opts, ref)
+    return gt.test(dict_path, corpus_path, output_path, reference_path)

@@ -9,7 +9,7 @@ from .parsemetrics import ParseMetrics, ParseQuality
 
 
 __all__ = ['DashboardError', 'AbstractDashboardClient', 'AbstractConfigClient', 'AbstractGrammarTestClient',
-           'AbstractFileParserClient']
+           'AbstractFileParserClient', 'AbstractStatEventHandler']
 
 DASH_UPDATE_PARSEABILITY = 1
 DASH_UPDATE_PARSEQUALITY = 2
@@ -65,9 +65,18 @@ class AbstractGrammarTestClient(metaclass=ABCMeta):
 
 class AbstractFileParserClient(metaclass=ABCMeta):
     """
-    Base class fot parsers
+    Base class for parsers
     """
     @abstractmethod
     def parse(self, dict_path: str, corpus_path: str, output_path: str, ref_file: str, options: int) \
             -> (ParseMetrics, ParseQuality):
+        pass
+
+
+class AbstractStatEventHandler(metaclass=ABCMeta):
+    """
+    Base class for statistics event handlers
+    """
+    @abstractmethod
+    def on_statistics(names: list, metrics: ParseMetrics, quality: ParseQuality) -> None:
         pass

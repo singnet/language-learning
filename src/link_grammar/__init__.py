@@ -1,8 +1,9 @@
 from .absclient import *
 from .cliutils import *
 from .dirhelper import *
-from .evaluate import *
-from .inprocparser import *
+from .grammartester import *
+from .parsevaluate import *
+from .lginprocparser import *
 from .lgapiparser import *
 from .lgmisc import *
 from .lgparse import *
@@ -15,8 +16,9 @@ __all__ = []
 __all__.extend(absclient.__all__)
 __all__.extend(cliutils.__all__)
 __all__.extend(dirhelper.__all__)
-__all__.extend(evaluate.__all__)
-__all__.extend(inprocparser.__all__)
+__all__.extend(grammartester.__all__)
+__all__.extend(parsevaluate.__all__)
+__all__.extend(lginprocparser.__all__)
 __all__.extend(lgapiparser.__all__)
 __all__.extend(lgmisc.__all__)
 __all__.extend(lgparse.__all__)

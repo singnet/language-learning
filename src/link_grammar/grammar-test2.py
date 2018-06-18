@@ -5,7 +5,7 @@ import os
 import getopt
 import platform
 
-from grammartest import parse_corpus_files, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
+from grammartest import test_grammar, parse_corpus_files, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
 from grammartest.optconst import *
 
 __version__ = "2.3.3"
@@ -94,7 +94,7 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
             elif opt in ("-e", "--link-parser-exe"):
                 options |= BIT_LG_EXE
             elif opt in ("-x", "--no-left-wall"):
-                options |= BIT_NO_LWALL
+                options |= (BIT_NO_LWALL | BIT_NO_PERIOD)
             elif opt in ("-s", "--separate-stat"):
                 options |= BIT_SEP_STAT
             elif opt in ("-L", "--local-lang-dir"):
@@ -121,6 +121,7 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
                     options |= BIT_OUTPUT_CONST_TREE
             elif opt in ("-R", "--reference"):
                 reference_path = handle_path_string(arg)
+                options |= BIT_PARSE_QUALITY
 
         # print("options=" + bin(options) + " (" + hex(options) + ")")
 
@@ -152,8 +153,11 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
     #     reference_path
 
     try:
-        parse_corpus_files(input_path, output_path, dict_path, grammar_path, template_path,
+        test_grammar(input_path, output_path, dict_path, grammar_path, template_path,
                            linkage_limit, options, reference_path)
+
+        # parse_corpus_files(input_path, output_path, dict_path, grammar_path, template_path,
+        #                    linkage_limit, options, reference_path)
 
     except LGParseError as err:
         print(str(err))

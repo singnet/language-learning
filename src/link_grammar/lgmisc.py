@@ -63,7 +63,13 @@ def print_output(tokens: list, raw_links: list, options: int, ofl):
                 and (link[LINK_1ST_TOKEN_INDEX] == rwall_index or link[LINK_2ND_TOKEN_INDEX] == rwall_index):
             continue
 
-        print(link[LINK_1ST_TOKEN_INDEX], tokens[link[LINK_1ST_TOKEN_INDEX]],
-              link[LINK_2ND_TOKEN_INDEX], tokens[link[LINK_2ND_TOKEN_INDEX]], file=ofl)
+        token_count = len(tokens)
+        index1, index2 = link[LINK_1ST_TOKEN_INDEX], link[LINK_2ND_TOKEN_INDEX]
+
+        if index1 < token_count and index2 < token_count:
+            print(index1, tokens[index1], index2, tokens[index2], file=ofl)
+        else:
+            print(tokens)
+            print(token_count, (index1, index2))
 
     print('', file=ofl)

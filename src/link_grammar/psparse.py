@@ -36,7 +36,7 @@ def strip_token(token) -> str:
     return token[:pos:]
 
 
-def parse_tokens(txt, opt) -> list:
+def parse_tokens(txt, opt) -> (list, int):
     """
     Parse string of tokens, taken from postscript notated LG parse output.
     After several iterations it became obvious that all tokens should be kept in the original list in order to
@@ -48,16 +48,18 @@ def parse_tokens(txt, opt) -> list:
     :return: list of tokens
     """
     tokens = []
+    offset = 0
     start_pos = 1
     end_pos = txt.find(")")
-
 
     while end_pos - start_pos > 0:
         token = txt[start_pos:end_pos:]
 
+        # Strip LG suffixes if the option is set.
         if opt & BIT_STRIP == BIT_STRIP:
             token = strip_token(token)
 
+        # All walls are supplied with leading and trailing hashes as agreed for the project.
         if token.find("-WALL") > 0:
 
             if token in ["RIGHT-WALL", "LEFT-WALL"]:
@@ -66,24 +68,23 @@ def parse_tokens(txt, opt) -> list:
             elif token in ["[RIGHT-WALL]", "[LEFT-WALL]"]:
                 tokens.append(r"###" + token[1:-1] + r"###")
 
-            # if token in ["RIGHT-WALL", "[RIGHT-WALL]"]:  # and (opt & BIT_RWALL) == BIT_RWALL):
-            #     tokens.append(r"###RIGHT-WALL###")
-            #
-            # elif token in ["LEFT-WALL", "[LEFT-WALL]"]:  # and not (opt & BIT_NO_LWALL)):
-            #     tokens.append(r"###LEFT-WALL###")
         else:
+            # Even if LEFT-WALL is not defined in .dict file it is still added into the token list
+            #   in order for token numbering to be started from one as agreed for ULL project.
             if start_pos == 1:
                 tokens.append(r"###LEFT-WALL###")
+                offset = 1
 
+            # By default all tokens are kept lower case.
             if opt & BIT_CAPS == 0:
                 token = token.lower()
 
             tokens.append(token)
 
         start_pos = end_pos + 2
-        end_pos = txt.find(")", start_pos)
+        end_pos = txt.find(")", start_pos + 1)
 
-    return tokens
+    return tokens, offset
 
 
 def prepare_tokens(tokens: list, options: int) -> list:
@@ -128,64 +129,16 @@ def prepare_tokens(tokens: list, options: int) -> list:
     return tokens[first_token:last_token+1]
 
 
-def parse_links2(txt, toks, options) -> (list, list):
+def parse_links(txt: str, tokens: list, offset: int) -> list:
     """
     Parse links represented in postfix notation and prints them in OpenCog notation.
 
-    :param txt: link list in postfix notation
-    :param toks: list of tokens previously extracted from postfix notated output
-    :return: List of all links, list of links without LW and '.'
-    """
-    links = []
-    qlinks = []
-
-    token_count = len(toks)
-    tokens2skip = []
-
-    # if (options & BIT_NO_LWALL) == BIT_NO_LWALL:
-    if token_count > 0 and toks[0].startswith(r"##"):
-        tokens2skip.append(0)
-
-    if token_count > 1 and toks[token_count-1] == r"." or toks[token_count-1].startswith(r"##"):
-        tokens2skip.append(token_count-1)
-
-    if token_count > 2 and toks[token_count-2] == r".":
-        tokens2skip.append(token_count-2)
-
-    print(toks)
-    print(tokens2skip)
-
-    start_pos = 1
-    end_pos = txt.find("]")
-
-    q = re.compile('(\d+)\s(\d+)\s\d+\s\(.+\)')
-
-    while end_pos - start_pos > 0:
-        mm = q.match(txt[start_pos:end_pos:])
-
-        if mm is not None:
-            index1 = int(mm.group(1))
-            index2 = int(mm.group(2))
-
-            if index2 < token_count:
-                links.append((index1, index2))
-
-                if index1 not in tokens2skip and index2 not in tokens2skip:
-                    qlinks.append((index1, index2))
-
-        start_pos = end_pos + 2
-        end_pos = txt.find("]", start_pos)
-
-    return links, qlinks
-
-
-def parse_links(txt, tokens) -> list:
-    """
-    Parse links represented in postfix notation and prints them in OpenCog notation.
-
-    :param txt: link list in postfix notation
-    :param tokens: list of tokens previously extracted from postfix notated output
-    :return: List of links in ULL format
+    :param txt:         Link list in postfix notation, obtained either from LG API or from link-parser postfix output.
+    :param tokens:      List of tokens previously extracted from postfix notated output.
+    :param offset:      Token index offset. Equals to 1 if tested grammar has no LEFT-WALL and the former was added
+                        during postscript parsing. Offset is necessary for the links to have their indexes properly
+                        updated.
+    :return:            List of links in ULL format.
     """
     links = []
 
@@ -203,7 +156,7 @@ def parse_links(txt, tokens) -> list:
             index1, index2 = int(mm.group(1)), int(mm.group(2))
 
             if index2 < token_count:
-                links.append((index1, index2))
+                links.append((index1+offset, index2+offset))
 
         start_pos = end_pos + 2
         end_pos = txt.find("]", start_pos)
@@ -215,18 +168,18 @@ def parse_postscript(text: str, options: int, ofile) -> ([], []):
     """
     Parse postscript notation of the linkage.
 
-    :param text: text string returned by Linkage.postscript() method.
-    :param ofile: output file object reference
-    :return: Tuple of two lists: (tokens, links).
+    :param text:        Text string returned by Linkage.postscript() method.
+    :param options      Bit mask, representing different parsing options. See `optconst.py` for details.
+    :param ofile:       Output file object reference.
+    :return:            Tuple of two lists: (tokens, links).
     """
-
     p = re.compile('\[(\(.+?\)+?)\]\[(.*?)\]\[0\]', re.S)
 
     m = p.match(text.replace("\n", ""))
 
     if m is not None:
-        tokens = parse_tokens(m.group(1), options)
-        links = parse_links(m.group(2), tokens)
+        tokens, offset = parse_tokens(m.group(1), options)
+        links = parse_links(m.group(2), tokens, offset)
 
         return tokens, links
 
@@ -236,20 +189,18 @@ def parse_postscript(text: str, options: int, ofile) -> ([], []):
 
     return [], []
 
+
 def get_link_set(tokens: list, links: list, options: int) -> set:
     """
     Create link set from link list filtering out unnecessary links according to options bit flags.
 
-    :param tokens:  Token list.
-    :param links:   Link list.
-    :param options: Integer bit mask variable.
-    :return: Filtered set of links.
+    :param tokens:      Token list.
+    :param links:       Link list.
+    :param options:     Integer bit mask variable.
+    :return:            Filtered set of links.
     """
     all_link_set = set(links)
     exc_link_set = set()
-
-    # print(all_link_set)
-    # print(tokens[0])
 
     token_count = len(tokens)
 
@@ -279,9 +230,9 @@ def skip_lines(text: str, lines_to_skip: int) -> int:
     """
      Skip specified number of lines from the beginning of a text string.
 
-    :param text: Text string with zero or many '\n' in.
-    :param lines_to_skip: Number of lines to skip.
-    :return: Return position of the first character after the specified number of lines is skipped.
+    :param text:            Text string with zero or many '\n' in.
+    :param lines_to_skip:   Number of lines to skip.
+    :return:                Return position of the first character after the specified number of lines is skipped.
     """
     l = len(text)
 
@@ -299,8 +250,8 @@ def trim_garbage(text: str) -> int:
     """
     Strip all characters from the end of string until ']' is reached.
 
-    :param text: Text string.
-    :return: Return position of a character following ']' or zero in case of a null string.
+    :param text:    Text string.
+    :return:        Return position of a character following ']' or zero in case of a null string.
     """
     l = len(text)-1
 
