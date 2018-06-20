@@ -2,17 +2,9 @@ import unittest
 import sys
 import os
 
-# print(os.environ['PWD'], file=sys.stderr)
+from link_grammar.inprocparser import parse_batch_ps_output, parse_file_with_lgp, parse_file_with_lgp0
+from grammar_test.optconst import *
 
-try:
-    # from link_grammar.lgparse import *
-    from link_grammar.inprocparser import parse_batch_ps_output, parse_file_with_lgp, parse_file_with_lgp0
-    from link_grammar.optconst import *
-
-except ImportError:
-    # from lgparse import *
-    from inprocparser import parse_batch_ps_output, parse_file_with_lgp, parse_file_with_lgp0
-    from optconst import *
 
 lg_post_output = """
 echo set to 1

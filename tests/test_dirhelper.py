@@ -1,10 +1,6 @@
 import unittest
 
-try:
-    from link_grammar.dirhelper import *
-
-except ImportError:
-    from dirhelper import *
+from grammar_test.dirhelper import *
 
 
 class DirHelperTestCase(unittest.TestCase):

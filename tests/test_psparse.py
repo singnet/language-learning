@@ -1,17 +1,10 @@
 import unittest
 import sys
 
-try:
-    from link_grammar.psparse import strip_token, parse_tokens, parse_links, parse_postscript, get_link_set, prepare_tokens
-    from link_grammar.optconst import *
-    from link_grammar.parsemetrics import ParseMetrics
-    from link_grammar.parsestat import parse_metrics
-
-except ImportError:
-    from psparse import strip_token, parse_tokens, parse_links, parse_postscript, get_link_set, prepare_tokens
-    from optconst import *
-    from parsemetrics import ParseMetrics
-    from parsestat import parse_metrics
+from grammar_test.psparse import strip_token, parse_tokens, parse_links, parse_postscript, get_link_set, prepare_tokens
+from grammar_test.optconst import *
+from grammar_test.parsemetrics import ParseMetrics
+from grammar_test.parsestat import parse_metrics
 
 
 gutenberg_children_bug = \
@@ -56,7 +49,76 @@ alice_bug_002 = \
 [0]
 """
 
+gutenberg_children_bug_002 = \
+"""
+[(LEFT-WALL)([a])(millennium.n-u)(fulcrum.n)(edition.n)([(])([c])([)])(1991[!])([by])
+(duncan[?].n)(research.n-u)]
+[[0 11 5 (Wa)][2 11 4 (AN)][3 11 3 (AN)][4 11 2 (AN)][8 11 1 (AN)][10 11 0 (AN)]]
+[0]
+"""
+
+gutenberg_children_bug_002t = "[(LEFT-WALL)([a])(millennium.n-u)(fulcrum.n)(edition.n)([(])([c])([)])(1991[!])([by])" \
+                              "(duncan[?].n)(research.n-u)]"
+
+gutenberg_children_bug_002tr = [r"###LEFT-WALL###", "[a]", "millennium", "fulcrum", "edition", "[(]", "[c]", "[)]",
+                                "1991", "[by]", "duncan", "research"]
+
+gutenberg_children_bug_002l = "[[0 11 5 (Wa)][2 11 4 (AN)][3 11 3 (AN)][4 11 2 (AN)][8 11 1 (AN)][10 11 0 (AN)]][0]"
+
+gutenberg_children_bug_002lr = [(0, 11), (2, 11), (3, 11), (4, 11), (8, 11), (10, 11)]
+
+
+
+# class TokenString(str):
+#     def __new__(cls, content):
+#         obj = super(TokenString, cls).__new__(cls, content)
+#         obj.brace_counter = 0
+#         obj.brckt_counter = 0
+#         obj.start_pos = 0
+#         return obj
+#
+#     def line(self):
+#         print("-> "+self[1:-1])
+#
+#
+# def find_end_of_token(text, pos: int) -> int:
+#
+#     braces = 0
+#     brackets = 0
+#
+#     while pos < len(text):
+#
+#         if text[pos] == r"(":
+#             braces += 1
+#
+#         elif text[pos] == r")":
+#             # if not "[)]"
+#             if not brackets:
+#                 braces -= 1
+#
+#             if not braces:
+#                 return pos-1
+#
+#         elif text[pos] == r"[":
+#             brackets += 1
+#
+#         elif text[pos] == r"]":
+#             brackets -= 1
+#
+#         pos += 1
+
+
+
 class TestPSParse(unittest.TestCase):
+
+    # def test_ps_parse_tokens(self):
+    #     ts = TokenString(gutenberg_children_bug_002t)
+    #
+    #     ts.line()
+    #
+    #     # tokens = [t for t in ts]
+    #
+    #     self.assertTrue(True)
 
     post_all_walls = "[(LEFT-WALL)(Dad[!])(was.v-d)(not.e)(a)(parent.n)(before)(.)(RIGHT-WALL)]" \
                      "[[0 7 2 (Xp)][0 1 0 (Wd)][1 2 0 (Ss*s)][2 5 1 (Osm)][2 3 0 (EBm)]" \
@@ -250,9 +312,37 @@ class TestPSParse(unittest.TestCase):
 
         self.assertEqual(0.0, pm.completely_parsed_ratio)
         self.assertEqual(0.0, pm.completely_unparsed_ratio)
-        self.assertEqual(0.94117647, float(pm.average_parsed_ratio))
+        self.assertEqual(0.9411764705882353, float(pm.average_parsed_ratio))
         # self.assertEqual(16.0/17.0, pm.average_parsed_ratio)
 
+
+    @unittest.skip
+    def test_parse_gutenchildren_bug_002(self):
+        options = BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP
+
+        tokens = parse_tokens(gutenberg_children_bug_002t, options)[0]
+
+        self.assertEqual(tokens, gutenberg_children_bug_002tr)
+
+    @unittest.skip
+    def test_parse_postscript_gutenchildren_bug_002(self):
+
+        options = BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP
+
+        tokens, links = parse_postscript(gutenberg_children_bug_002, options, sys.stdout)
+
+        print(tokens)
+
+        self.assertEqual(12, len(tokens))
+        self.assertEqual(6, len(links))
+
+        # pm = parse_metrics(tokens)
+        #
+        # self.assertEqual(0.0, pm.completely_parsed_ratio)
+        # self.assertEqual(0.0, pm.completely_unparsed_ratio)
+        # self.assertEqual(0.94117647, float(pm.average_parsed_ratio))
+
+        # self.assertEqual(16.0/17.0, pm.average_parsed_ratio)
 
     # @unittest.skip
     def test_parse_postscript_alice_bug_001(self):

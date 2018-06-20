@@ -5,7 +5,7 @@ from decimal import *
 from .absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
 from .dirhelper import traverse_dir_tree, create_dir
 from .parsemetrics import ParseMetrics, ParseQuality
-from .lgparse import create_grammar_dir
+from .lgmisc import create_grammar_dir
 from .optconst import *
 
 from .lginprocparser import LGInprocParser
@@ -135,7 +135,7 @@ class GrammarTester(AbstractGrammarTestClient):
             if args[CORP_ARG_REFF] is None:
                 return None
 
-            return args[CORP_ARG_REFF] + corpus_file_path[len(args[CORP_ARG_CORP]):] + ".ref"
+            return args[CORP_ARG_REFF] + corpus_file_path[len(args[CORP_ARG_CORP]):] + ".ull"
 
         return args[CORP_ARG_REFF]
 
@@ -158,7 +158,7 @@ class GrammarTester(AbstractGrammarTestClient):
 
             if self._options & (BIT_SEP_STAT | BIT_OUTPUT) == BIT_SEP_STAT:
                 stat_name = out_file + ".stat"
-                stat_name += "2" if (self._options & BIT_LG_EXE) else ""
+                # stat_name += "2" if (self._options & BIT_LG_EXE) else ""
 
                 self._save_stat(stat_name, file_metrics, file_quality)
 
@@ -201,16 +201,17 @@ class GrammarTester(AbstractGrammarTestClient):
                 traverse_dir_tree(corp_path, "", [self._on_corpus_file, dest_path, lang_path] + args,
                                                  [self._on_corp_dir, dest_path, lang_path] + args, True)
 
+            # If output format is set to ULL
             if not self._options & BIT_OUTPUT:
-                stat_suffix = "2" if (self._options & BIT_LG_EXE) == BIT_LG_EXE else ""
-                stat_path = dest_path + "/" + os.path.split(corp_path)[1] + ".stat" + stat_suffix
+                # stat_suffix = "2" if (self._options & BIT_LG_EXE) == BIT_LG_EXE else ""
+                stat_path = dest_path + "/" + os.path.split(corp_path)[1] + ".stat" #+ stat_suffix
 
                 self._save_stat(stat_path, self._total_metrics, self._total_quality)
 
-            if self._is_dir_dict and self._event_handler is not None:
-                names = dict_path[len(args[DICT_ARG_DICT])+1:].split("/")
-
-                self._event_handler.on_statistics(names, self._total_metrics, self._total_quality)
+                # Invoke on_statistics() event handler
+                if self._is_dir_dict and self._event_handler is not None:
+                    self._event_handler.on_statistics(dict_path[len(args[DICT_ARG_DICT])+1:].split("/"),
+                                                      self._total_metrics, self._total_quality)
 
         except Exception as err:
             print("_on_dict_file(): "+str(err))
@@ -234,8 +235,6 @@ class GrammarTester(AbstractGrammarTestClient):
         self._is_dir_corpus = os.path.isdir(corpus_path)
         self._is_dir_dict = os.path.isdir(dict_path)
 
-        # print(self._is_dir_dict, self._is_dir_corpus, corpus_path)
-
         if reference_path is not None:
             if self._is_dir_corpus:
                 if not os.path.isdir(reference_path):
@@ -246,17 +245,19 @@ class GrammarTester(AbstractGrammarTestClient):
                     raise GrammarTestError("GrammarTestError: If 'corpus_path' is a file 'reference_path' should be an "
                                            "existing file path too.")
 
+        # No need to duplicate subdirectory structure inside itself.
+        if dict_path == output_path:
+            self._options &= (~BIT_DPATH_CREATE)
+
         try:
             # Arguments for callback functions
             parse_args = [dict_path, corpus_path, output_path, reference_path]
 
             # If dict_path is a directory then call on_dict_file for every .dict file found.
             if self._is_dir_dict:
+                dir_arg_list = [self._on_dict_dir]+parse_args if self._options & BIT_DPATH_CREATE else None
 
-                traverse_dir_tree(dict_path, ".4.0.dict", [self._on_dict_file]+parse_args,
-                                  [self._on_dict_dir]+parse_args, True)
-
-                # lambda : [self._on_dict_dir]+parse_args if self._options & BIT_DPATH_CREATE else [],
+                traverse_dir_tree(dict_path, ".4.0.dict", [self._on_dict_file]+parse_args, dir_arg_list, True)
 
             # Otherwise it can be either single .dict file name or name of LG preinstalled dictionary e.g. 'en'
             else:

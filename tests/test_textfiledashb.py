@@ -1,11 +1,8 @@
 import unittest
 import os
 
-try:
-    from link_grammar.textfiledashb import TextFileDashboard, DashboardError
+from grammar_test.textfiledashb import TextFileDashboard, DashboardError
 
-except ImportError:
-    from textfiledashb import TextFileDashboard, DashboardError
 
 class TextFileDashTestCase(unittest.TestCase):
 

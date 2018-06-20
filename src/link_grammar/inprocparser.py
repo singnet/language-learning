@@ -1,12 +1,11 @@
 import sys
 from subprocess import PIPE, Popen
 
-from .optconst import *
-from .psparse import *
-from .parsestat import *
-from .parsemetrics import *
-from .lgparse import *
-from .lgmisc import *
+from grammar_test.optconst import *
+from grammar_test.psparse import *
+from grammar_test.parsestat import *
+from grammar_test.parsemetrics import *
+from grammar_test.lgmisc import *
 
 __all__ = ['parse_file_with_lgp']
 

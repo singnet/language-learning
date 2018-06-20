@@ -1,10 +1,7 @@
 import unittest
 import sys
 
-try:
-    from link_grammar.parsemetrics import *
-except ImportError:
-    from parsemetrics import *
+from grammar_test.parsemetrics import *
 
 
 class TestMetrics(unittest.TestCase):

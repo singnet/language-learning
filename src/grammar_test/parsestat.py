@@ -39,7 +39,7 @@ def calc_stat(tokens: list) -> (int, int, Decimal):
         if tokens[i].startswith("["):
             unlinked += 1
 
-    return unlinked == 0, total == unlinked, (1.0 if unlinked == 0 else 1.0 - Decimal(unlinked) / Decimal(total))
+    return unlinked == 0, total == unlinked, (1.0 if unlinked == 0 else Decimal("1.0") - Decimal(unlinked) / Decimal(total))
 
 
 def parse_metrics(tokens: list) -> ParseMetrics:

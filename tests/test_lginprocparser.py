@@ -1,8 +1,8 @@
 import unittest
 import sys
 from link_grammar.inprocparser import parse_batch_ps_output, parse_file_with_lgp, parse_file_with_lgp0
-from link_grammar.optconst import *
-from link_grammar.lginprocparser import LGInprocParser
+from grammar_test.optconst import *
+from grammar_test.lginprocparser import LGInprocParser
 
 lg_post_output = """
 echo set to 1
@@ -108,7 +108,7 @@ class LGInprocParserTestCase(unittest.TestCase):
         tup_lgp = parse_file_with_lgp0("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
                                       None, 1, options)
 
-        metrics = pr.parse("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt",
+        metrics = pr.parse("test-data/dict/poc-turtle", "test-data/corpora/poc-turtle/poc-turtle.txt", None,
                                       None, options)
 
         print(tup_lgp, sys.stderr)

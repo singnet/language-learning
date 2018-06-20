@@ -1,9 +1,8 @@
 import unittest
 
-from link_grammar.lgapiparser import *
-from link_grammar.parsemetrics import ParseMetrics, ParseQuality
-from link_grammar.optconst import *
-from link_grammar.lginprocparser import LGInprocParser
+from grammar_test.lgapiparser import *
+from grammar_test.optconst import *
+from grammar_test.lginprocparser import LGInprocParser
 
 
 class LGAPITestCase(unittest.TestCase):

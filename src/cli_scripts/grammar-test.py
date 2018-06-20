@@ -8,12 +8,12 @@ import platform
 from grammartest import test_grammar, parse_corpus_files, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
 from grammartest.optconst import *
 
-__version__ = "2.3.3"
+__version__ = "3.0.0"
 
 
 def main(argv):
     """
-Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIONS]
+Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIONS]
 
     dict_path           Path to grammar definition file (or directory with multiple such files) to be tested.
                         The files should be in proper Link Grammar .dict format. Language short name such as 'en' or
@@ -61,7 +61,7 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
     template_path   = None
     reference_path  = None
 
-    print("grammar-test2.py ver." + __version__)
+    print("grammar-test.py ver." + __version__)
     print("Python v." + platform.python_version())
 
     try:
@@ -148,9 +148,6 @@ Usage: grammar-test2.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTI
 
     if dict_path is None:
         dict_path = "en"
-
-    # if reference_path is None:
-    #     reference_path
 
     try:
         test_grammar(input_path, output_path, dict_path, grammar_path, template_path,

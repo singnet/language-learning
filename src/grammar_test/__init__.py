@@ -6,7 +6,7 @@ from .parsevaluate import *
 from .lginprocparser import *
 from .lgapiparser import *
 from .lgmisc import *
-from .lgparse import *
+# from .lgparse import *
 from .optconst import *
 from .parsemetrics import *
 from .parsestat import *
@@ -21,7 +21,7 @@ __all__.extend(parsevaluate.__all__)
 __all__.extend(lginprocparser.__all__)
 __all__.extend(lgapiparser.__all__)
 __all__.extend(lgmisc.__all__)
-__all__.extend(lgparse.__all__)
+# __all__.extend(lgparse.__all__)
 __all__.extend(optconst.__all__)
 __all__.extend(parsemetrics.__all__)
 __all__.extend(parsestat.__all__)

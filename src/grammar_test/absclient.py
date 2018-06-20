@@ -78,5 +78,5 @@ class AbstractStatEventHandler(metaclass=ABCMeta):
     Base class for statistics event handlers
     """
     @abstractmethod
-    def on_statistics(names: list, metrics: ParseMetrics, quality: ParseQuality) -> None:
+    def on_statistics(self, names: list, metrics: ParseMetrics, quality: ParseQuality) -> None:
         pass

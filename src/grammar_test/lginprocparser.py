@@ -51,7 +51,7 @@ class LGInprocParser(AbstractFileParserClient):
         end = trim_garbage(text)
 
         sent_count = 0
-        sent_set = set()
+        # sent_set = set()
 
         # Parse output to get sentences and linkages in postscript notation
         for sent in text[pos:end].split("\n\n"):
@@ -69,7 +69,7 @@ class LGInprocParser(AbstractFileParserClient):
 
             sentences.append(cur_sent)
 
-            sent_set.add(cur_sent.text)
+            # sent_set.add(cur_sent.text)
 
             # set_len = len(sent_set)
 
@@ -79,8 +79,8 @@ class LGInprocParser(AbstractFileParserClient):
             sent_count += 1
 
         # assert len(sent_set) == sent_count, "Duplicate sentences!"
-        if len(sent_set) != sent_count:
-            print("Duplicate sentences found! len(sent_set): {},\t\tsent_count: {}".format(len(sent_set), sent_count))
+        # if len(sent_set) != sent_count:
+        #     print("Duplicate sentences found! len(sent_set): {},\t\tsent_count: {}".format(len(sent_set), sent_count))
 
         return sentences
 
@@ -132,6 +132,7 @@ class LGInprocParser(AbstractFileParserClient):
                     try:
                         # Print out links in ULL-format
                         print_output(tokens, links, options, out_stream)
+
                     except Exception as err:
                         print(str(err) + " in print_output()")
 

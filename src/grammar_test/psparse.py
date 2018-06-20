@@ -52,6 +52,7 @@ def parse_tokens(txt, opt) -> (list, int):
     start_pos = 1
     end_pos = txt.find(")")
 
+
     while end_pos - start_pos > 0:
         token = txt[start_pos:end_pos:]
 
@@ -153,10 +154,10 @@ def parse_links(txt: str, tokens: list, offset: int) -> list:
         mm = q.match(txt[start_pos:end_pos:])
 
         if mm is not None:
-            index1, index2 = int(mm.group(1)), int(mm.group(2))
+            index1, index2 = int(mm.group(1))+offset, int(mm.group(2))+offset
 
             if index2 < token_count:
-                links.append((index1+offset, index2+offset))
+                links.append((index1, index2))
 
         start_pos = end_pos + 2
         end_pos = txt.find("]", start_pos)

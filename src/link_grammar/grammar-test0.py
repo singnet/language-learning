@@ -11,7 +11,7 @@ OUTPUT_CONSTITUENT      = 2
 
 def main(argv):
     """
-        Usage: grammar-test.py [-f <dict_file_path> | -d <dir_with_dict_files>] -g <grammar_dir> -c <corpus_file_path>
+        Usage: grammar-test0.py [-f <dict_file_path> | -d <dir_with_dict_files>] -g <grammar_dir> -c <corpus_file_path>
                                 [-t <template_dict_path> -o <output_format> -r]
 
                 dict_file_path    - grammar file path. Grammar file name should be: 'grammar-name_cluster-info_yyyy-MM-dd_hhhh.4.0.dict'

@@ -1,6 +1,6 @@
 import unittest
 import sys
-from link_grammar.parsevaluate import *
+from grammar_test.parsevaluate import *
 
 
 parse_no_wall = """tuna isa fish . 
