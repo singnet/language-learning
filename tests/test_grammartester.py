@@ -28,7 +28,7 @@ import pstats
 tmpl = "/home/alex/data/dict/poc-turtle"
 grmr = "/home/alex/data/dict"
 limit = 100
-opts = BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BIT_RM_DIR | BIT_DPATH_CREATE | BIT_LOC_LANG | BIT_PARSE_QUALITY #| BIT_ULL_IN #| BIT_OUTPUT_DIAGRAM #| BIT_ULL_IN | BIT_SEP_STAT
+opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BIT_RM_DIR #| BIT_DPATH_CREATE | BIT_LOC_LANG | BIT_PARSE_QUALITY #| BIT_ULL_IN #| BIT_OUTPUT_DIAGRAM #| BIT_SEP_STAT
 
 # # Gutenberg Children Parses
 # dict = "en"
@@ -52,18 +52,19 @@ opts = BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BIT_RM_DIR | BIT_DPATH_CREATE 
 # # Parseability test
 # dict = "poc-turtle"
 # # dict = "en"
-# corp = "/home/alex/data/corpora/poc-english-multi"
+# # corp = "/home/alex/data/corpora/poc-english-multi"
+# corp = "/home/alex/data/corpora/poc-english-one"
 # # corp = "/home/alex/data/corpora/poc-english/poc_english.txt"
 # dest = "/home/alex/data2/parses"
-# ref = "/home/alex/data2/parses"
+# # ref = "/home/alex/data2/parses"
 # # ref = "/home/alex/data2/parses/poc_english.txt.ref"
-# # ref = None
+# ref = None
 
-# AGI-2018 Test
-dict = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period"
-corp = "/home/alex/data/poc-english/poc_english_noamb.txt"
-dest = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period"
-ref = "/home/alex/data/poc-english/poc_english_noamb_parse_ideal.txt"
+# # AGI-2018 Test
+# dict = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period"
+# corp = "/home/alex/data/poc-english/poc_english_noamb.txt"
+# dest = "/home/alex/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period"
+# ref = "/home/alex/data/poc-english/poc_english_noamb_parse_ideal.txt"
 
 # # Gutenberg-Alice-2018-06-01 parse for ULL reference
 # dict = "en"

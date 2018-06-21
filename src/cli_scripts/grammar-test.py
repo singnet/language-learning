@@ -5,8 +5,8 @@ import os
 import getopt
 import platform
 
-from grammartest import test_grammar, parse_corpus_files, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
-from grammartest.optconst import *
+from ull.grammartest import test_grammar, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
+from ull.grammartest.optconst import *
 
 __version__ = "3.0.0"
 
@@ -55,7 +55,7 @@ Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIO
     dict_path       = None
     input_path      = None
     output_path     = None
-    options         = 0x00000000 | BIT_STRIP | BIT_ULL_IN
+    options         = 0x00000000 | BIT_STRIP #| BIT_ULL_IN
     linkage_limit   = None
     grammar_path    = None
     template_path   = None

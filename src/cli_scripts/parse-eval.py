@@ -10,7 +10,7 @@ import getopt
 import sys
 import os
 
-from grammartest import compare_ull_files, EvalError, handle_path_string
+from ull.grammartest import compare_ull_files, EvalError, handle_path_string
 
 def version():
     """

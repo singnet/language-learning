@@ -127,7 +127,7 @@ def get_output_suffix(options: int) -> str:
 
     out_format = options & BIT_OUTPUT
 
-    suff = "2" if (options & BIT_LG_EXE) else ""
+    suff = ""  # "2" if (options & BIT_LG_EXE) else ""
 
     if (out_format & BIT_OUTPUT_CONST_TREE) == BIT_OUTPUT_CONST_TREE:
         return ".tree" + suff
