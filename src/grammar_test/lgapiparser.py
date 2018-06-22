@@ -3,11 +3,11 @@ import sys
 from linkgrammar import LG_DictionaryError, LG_Error, ParseOptions, Dictionary, Sentence
 
 from .optconst import *
-from .parsemetrics import ParseMetrics, ParseQuality
+from common.parsemetrics import ParseMetrics, ParseQuality
 from .parsestat import parse_metrics, parse_quality
 from .psparse import parse_postscript, prepare_tokens, get_link_set
 from .lgmisc import get_output_suffix, print_output
-from .absclient import AbstractFileParserClient
+from common.absclient import AbstractFileParserClient
 from .parsevaluate import load_ull_file, get_parses
 
 

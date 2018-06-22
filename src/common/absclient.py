@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
     
 """
 
-from .parsemetrics import ParseMetrics, ParseQuality
+from common.parsemetrics import ParseMetrics, ParseQuality
 
 
 __all__ = ['DashboardError', 'AbstractDashboardClient', 'AbstractConfigClient', 'AbstractGrammarTestClient',
@@ -45,11 +45,25 @@ class AbstractConfigClient(metaclass=ABCMeta):
         or from Web services
     """
     @abstractmethod
-    def get_config(self):
+    def get_config(self, config_name: str, comp_name: str) -> dict:
+        """
+        Retreave configuration from whatever source.
+
+        :param config_name:     Configuration name string.
+        :param comp_name:       Component name string.
+        :return:                Dictionary instance holding configuration parameters.
+        """
         pass
 
     @abstractmethod
-    def save_config(self):
+    def save_config(self, config_name: str, comp_name: str) -> None:
+        """
+        Save configuration to whatever destination.
+
+        :param config_name:     Configuration name string.
+        :param comp_name:       Component name string.
+        :return:                None
+        """
         pass
 
 
@@ -78,5 +92,5 @@ class AbstractStatEventHandler(metaclass=ABCMeta):
     Base class for statistics event handlers
     """
     @abstractmethod
-    def on_statistics(self, names: list, metrics: ParseMetrics, quality: ParseQuality) -> None:
+    def on_statistics(self, nodes: list, metrics: ParseMetrics, quality: ParseQuality) -> None:
         pass

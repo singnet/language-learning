@@ -39,5 +39,20 @@
         "parse_format": "ull"
       }
     ]
+  },
+  {
+    "component": "dash-board",
+    "parameters": [
+      {
+        "board_type": "file",
+        "board_name": "AGI-2018",
+        "row_names": [""],
+        "col_names": [""],
+        "row_titles": [""],
+        "col_titles": [""],
+        "row_index": "1",
+        "col_index": "0"
+      }
+    ]
   }
 ]

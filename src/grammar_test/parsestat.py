@@ -1,6 +1,6 @@
 from decimal import *
 
-from .parsemetrics import ParseQuality, ParseMetrics
+from common.parsemetrics import ParseQuality, ParseMetrics
 
 """
     Statistics estimation set of functions

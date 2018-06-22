@@ -2,9 +2,9 @@ import os
 import sys
 from decimal import *
 
-from .absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
-from .dirhelper import traverse_dir_tree, create_dir
-from .parsemetrics import ParseMetrics, ParseQuality
+from common.absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
+from common.dirhelper import traverse_dir_tree, create_dir
+from common.parsemetrics import ParseMetrics, ParseQuality
 from .lgmisc import create_grammar_dir
 from .optconst import *
 

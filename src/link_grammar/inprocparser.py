@@ -4,7 +4,7 @@ from subprocess import PIPE, Popen
 from grammar_test.optconst import *
 from grammar_test.psparse import *
 from grammar_test.parsestat import *
-from grammar_test.parsemetrics import *
+from common.parsemetrics import *
 from grammar_test.lgmisc import *
 
 __all__ = ['parse_file_with_lgp']

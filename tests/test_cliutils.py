@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from grammar_test.cliutils import *
+from common.cliutils import *
 
 
 class TestCliUtils(unittest.TestCase):

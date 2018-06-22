@@ -1,5 +1,5 @@
 import os
-from .lgmisc import LGParseError
+# from grammar_test.lgmisc import LGParseError
 
 __all__ = ['traverse_dir', 'create_dir', 'traverse_dir_tree']
 
@@ -107,7 +107,7 @@ def traverse_dir(root, file_ext, on_file, on_dir=None, is_recursive=False):
             if on_file is not None:
                 try:
                     on_file(entry.path)
-                except LGParseError as err:
+                except Exception as err:
                     print("LGParseError: " + str(err))
 
 
@@ -137,7 +137,7 @@ def traverse_dir0(root, file_ext, on_file, on_dir=None, is_recursive=False):
             if on_file is not None:
                 try:
                     on_file(entry.path)
-                except LGParseError as err:
+                except Exception as err:
                     print("LGParseError: " + str(err))
 
 

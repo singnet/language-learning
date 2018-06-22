@@ -1,11 +1,9 @@
 import unittest
 from grammar_test.grammartester import GrammarTester, test_grammar
 from grammar_test.lginprocparser import LGInprocParser
-from grammar_test.parsemetrics import ParseMetrics
 from grammar_test.optconst import *
 
 import cProfile
-import pstats
 
 # dict = "/usr/local/share/link-grammar/en"
 # dict = "en"
@@ -79,13 +77,13 @@ opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BI
 # ref = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01/parses/alice_11-0_txt_split_default.txt.ull"
 # # ref = None
 
-# # Child Directed Speech
-# dict = "en"
-# # dict = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01"
-# corp = "/home/alex/data/corpora/ChildDirectedSpeech"
-# dest = "/home/alex/data2/parses/ChildDirectedSpeech"
-# # ref = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01/parses/alice_11-0_txt_split_default.txt.ull"
-# ref = None
+# Child Directed Speech
+dict = "en"
+# dict = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01"
+corp = "/home/alex/data/corpora/ChildDirectedSpeech"
+dest = "/home/alex/data2/parses/ChildDirectedSpeech"
+# ref = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01/parses/alice_11-0_txt_split_default.txt.ull"
+ref = None
 
 
 

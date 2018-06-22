@@ -1,7 +1,7 @@
 import unittest
 import sys
 
-from grammar_test.parsemetrics import *
+from common.parsemetrics import *
 
 
 class TestMetrics(unittest.TestCase):

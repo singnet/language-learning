@@ -3,7 +3,6 @@ import sys
 
 from grammar_test.psparse import strip_token, parse_tokens, parse_links, parse_postscript, get_link_set, prepare_tokens
 from grammar_test.optconst import *
-from grammar_test.parsemetrics import ParseMetrics
 from grammar_test.parsestat import parse_metrics
 
 

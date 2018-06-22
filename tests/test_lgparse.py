@@ -15,7 +15,7 @@ import sys
 #     from inprocparser import parse_batch_ps_output, parse_file_with_lgp
 #     from parsemetrics import ParseMetrics, ParseQuality
 
-from grammartest import *
+from ull.grammartest import *
 # from grammartest import parse_file_with_api, print_output, LGParseError, parse_file_with_lgp, ParseMetrics, ParseQuality
 # from .lgparse import , create_grammar_dir
 # from .optconst import *

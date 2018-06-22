@@ -1,6 +1,6 @@
 import unittest
 
-from grammar_test.dirhelper import *
+from common.dirhelper import *
 
 
 class DirHelperTestCase(unittest.TestCase):

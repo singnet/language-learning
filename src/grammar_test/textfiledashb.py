@@ -1,9 +1,14 @@
+from common.absclient import AbstractDashboardClient, DashboardError, AbstractStatEventHandler
+from common.parsemetrics import ParseMetrics, ParseQuality
 
-from .parsemetrics import ParseMetrics, ParseQuality
-from .absclient import AbstractDashboardClient, DashboardError
+CONF_ROW_KEY = "row_key"
+CONF_ROW_IND = "row_indexes"
+CONF_COL_KEY = "col_key"
+CONF_COL_IND = "col_indexes"
+CONF_VAL_KEYS = "value_keys"
 
 
-class TextFileDashboard(AbstractDashboardClient):
+class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
     """
     Class which implements text file serialization.
         Exceptions: IndexError, ValueError
@@ -13,10 +18,28 @@ class TextFileDashboard(AbstractDashboardClient):
         self._row_count = row_count
         self._col_count = col_count
         self._dashboard = [list() for r in range(0, row_count)]
+        self._config = None
 
         for row in self._dashboard:
             for i in range(0, col_count):
                 row.append(None)
+
+    def on_statistics(self, nodes: list, metrics: ParseMetrics, quality: ParseQuality):
+        # Get row index by row key
+        row_key = self._config[CONF_ROW_KEY].format(*nodes)
+        row_ind = self._config[CONF_ROW_IND][row_key].format(*nodes)
+
+        # Get column index by name
+        col_key = self._config[CONF_COL_KEY].format(*nodes)
+        col_ind = self._config[CONF_COL_IND][col_key].format(*nodes)
+
+        # Get value key string by column index
+        val_str = self._config[CONF_VAL_KEYS][col_ind].format(nodes=nodes,
+                                                              parseability=metrics.parseability(metrics),
+                                                              parsequality=quality.parse_quality(quality))
+
+        # Put value into the table
+        self.set_cell_by_indexes(row_ind, col_ind, val_str)
 
     def set_row_names(self, names: list):
         """ Set name for each row. """
