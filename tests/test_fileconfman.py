@@ -32,6 +32,8 @@ class JsonRWTestCase(unittest.TestCase):
         print("{nodes[2]}{nodes[1]}{nodes[0]}".format(nodes=["A", "B", "C"]))
         print("{nodes[1]}>>{sentences}>>{parseability}".format(parseability=pm.parseability(pm), sentences=pm.sentences, nodes=["A", "B", "C"]))
 
+        # print("{0[2:5]}".format("qwertyuio"))
+
     @unittest.skip
     def test_read_config(self):
         print(os.environ['PWD'], file=sys.stderr)

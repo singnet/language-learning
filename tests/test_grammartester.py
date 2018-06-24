@@ -5,6 +5,10 @@ from grammar_test.optconst import *
 
 import cProfile
 
+from common.fileconfman import JsonFileConfigManager
+from common.cliutils import handle_path_string
+from grammar_test.textfiledashb import TextFileDashboard
+
 # dict = "/usr/local/share/link-grammar/en"
 # dict = "en"
 # dict = "poc-turtle"
@@ -77,13 +81,13 @@ opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BI
 # ref = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01/parses/alice_11-0_txt_split_default.txt.ull"
 # # ref = None
 
-# Child Directed Speech
-dict = "en"
-# dict = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01"
-corp = "/home/alex/data/corpora/ChildDirectedSpeech"
-dest = "/home/alex/data2/parses/ChildDirectedSpeech"
-# ref = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01/parses/alice_11-0_txt_split_default.txt.ull"
-ref = None
+# # Child Directed Speech
+# dict = "en"
+# # dict = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01"
+# corp = "/home/alex/data/corpora/ChildDirectedSpeech"
+# dest = "/home/alex/data2/parses/ChildDirectedSpeech"
+# # ref = "/home/alex/data2/parses/Gutenberg-Alice-2018-06-01/parses/alice_11-0_txt_split_default.txt.ull"
+# ref = None
 
 
 
@@ -93,10 +97,52 @@ ref = None
 # dest = "/home/alex/data2/parses/PubMed-2018-06-01/ref"
 # ref = None
 
+CONF_DICT_PATH = "input_grammar"
+CONF_CORP_PATH = "input_corpus"
+CONF_DEST_PATH = "output_path"
+CONF_REFR_PATH = "ref_path"
+CONF_GRMR_PATH = "grammar_root"
+CONF_TMPL_PATH = "template_path"
+CONF_LNK_LIMIT = "linkage_limit"
+
 
 class GrammarTesterTestCase(unittest.TestCase):
 
     # @unittest.skip
+    def test_test_with_conf(self):
+        conf_path = "test-data/config/AGI-2018.json"
+
+        try:
+            cfgman = JsonFileConfigManager(conf_path)
+            dboard = TextFileDashboard(cfgman)
+            parser = LGInprocParser()
+
+            # Get configuration parameters
+            config = cfgman.get_config("", "grammar-tester")
+
+            # Create GrammarTester instance
+            tester = GrammarTester(handle_path_string(config[0][CONF_GRMR_PATH]),
+                                   handle_path_string(config[0][CONF_TMPL_PATH]),
+                                   config[0][CONF_LNK_LIMIT], opts, parser, dboard)
+
+            cfg = config[0]
+            # for cfg in config:
+
+            # Run grammar test
+            pm, pq = tester.test(handle_path_string(cfg[CONF_DICT_PATH]), handle_path_string(cfg[CONF_CORP_PATH]),
+                                 handle_path_string(cfg[CONF_DEST_PATH]), handle_path_string(cfg[CONF_REFR_PATH]))
+
+            dboard.update_dashboard()
+
+            print(pm.text(pm))
+
+        except Exception as err:
+            print(str(err))
+
+        # self.assertEqual(25, gt._total_dicts)
+        # self.assertEqual(88, pm.sentences)
+
+    @unittest.skip
     def test_test(self):
         pr = LGInprocParser()
 

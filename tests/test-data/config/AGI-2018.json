@@ -1,36 +1,5 @@
 [
   {
-    "component":"pre-cleaner",
-    "parameters": [
-      {
-        "input": "/akolonin/corp/russian1",
-        "output": "./cleaned",
-        "lowercase": "true"
-      }
-    ]
-  },
-  {
-    "component": "text-parser",
-    "parameters": [
-      {
-        "input": "./cleaned",
-        "output": "./parses",
-        "parsing_mode": "plain_mst"
-      }
-    ]
-  },
-  {
-    "component": "grammar-learner",
-    "parameters":[
-      {
-        "input": "./parses",
-        "output_grammar": "./grammar.dict",
-        "output_categories": "./cat_tree.txt",
-        "period": "true"
-      }
-    ]
-  },
-  {
     "component": "grammar-tester",
     "parameters": [
       {
@@ -80,12 +49,15 @@
     "parameters": [
       {
         "board_type": "file",
+        "file_path": "~/data2/parses/AGI-2018-paper-data-2018-04-22/AGI-2018.txt",
         "board_name": "AGI-2018",
+        "row_count": 17,
+        "col_count": 10,
         "row_key": "{2}-{1}",
         "col_key": "{0}",
         "value_keys": [
-          "{node[2]}",
-          "{node[1]}",
+          "{nodes[2]}",
+          "{nodes[1]}",
           "{parseability}",
           "{parseability}",
           "{parseability}",
@@ -95,17 +67,47 @@
           "{parsequality}",
           "{parsequality}"
         ],
-        "row_names": {},
-        "col_names": [""],
-        "row_titles": [""],
-        "col_titles": [""],
+        "col_headers": [
+          [
+            {"title": ""},
+            {"title": "Parsing/MI counting"},
+            {"title": "Connectors/DRK/Connectors"},
+            {"title": "Connectors/DRK/Disjuncts"},
+            {"title": "Disjuncts/DRK/Disjuncts"},
+            {"title": "Disjuncts/ILE/Disjuncts"},
+            {"title": "Connectors/DRK/Connectors"},
+            {"title": "Connectors/DRK/Disjuncts"},
+            {"title": "Disjuncts/DRK/Disjuncts"},
+            {"title": "Disjuncts/ILE/Disjuncts"}
+          ]
+        ],
         "row_indexes": {
-          "POC-Turtle-no-LEFT-WALL-MST_fixed_manually": 1,
-          "POC-Turtle-no-LEFT-WALL-R=6_Weight=6:R": 2,
-          "POC-Turtle-no-LEFT-WALL-R=6_Weight=1": 3,
-          "POC-Turtle-no-LEFT-WALL-LG_ANY_all_parses": 4,
+          "POC-Turtle-LEFT-WALL+period-MST_fixed_manually": [1],
+          "POC-Turtle-LEFT-WALL+period-R=6_Weight=6:R": [2],
+          "POC-Turtle-LEFT-WALL+period-R=6_Weight=1": [3],
+          "POC-Turtle-LEFT-WALL+period-LG_ANY_all_parses": [4],
+
+          "POC-Turtle-no-LEFT-WALL-MST_fixed_manually": [5],
+          "POC-Turtle-no-LEFT-WALL-R=6_Weight=6:R": [6],
+          "POC-Turtle-no-LEFT-WALL-R=6_Weight=1": [7],
+          "POC-Turtle-no-LEFT-WALL-LG_ANY_all_parses": [8],
+
+          "POC-English-NoAmb-LEFT-WALL+period-MST_fixed_manually": [9],
+          "POC-English-NoAmb-LEFT-WALL+period-R=6_Weight=6:R": [10],
+          "POC-English-NoAmb-LEFT-WALL+period-R=6_Weight=1": [11],
+          "POC-English-NoAmb-LEFT-WALL+period-LG_ANY_all_parses": [12],
+
+          "POC-English-Noamb-no-LEFT-WALL-MST_fixed_manually": [13],
+          "POC-English-Noamb-no-LEFT-WALL-R=6_Weight=6:R": [14],
+          "POC-English-Noamb-no-LEFT-WALL-R=6_Weight=1": [15],
+          "POC-English-Noamb-no-LEFT-WALL-LG_ANY_all_parses": [16]
         },
-        "col_indexes": {}
+        "col_indexes": {
+          "connectors-DRK-connectors": [2, 6],
+          "connectors-DRK-disjuncts": [3, 7],
+          "disjuncts-DRK-disjuncts": [4, 8],
+          "disjuncts-ILE-disjuncts": [5, 9]
+        }
       }
     ]
   }

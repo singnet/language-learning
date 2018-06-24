@@ -210,11 +210,17 @@ class GrammarTester(AbstractGrammarTestClient):
 
                 # Invoke on_statistics() event handler
                 if self._is_dir_dict and self._event_handler is not None:
-                    self._event_handler.on_statistics(dict_path[len(args[DICT_ARG_DICT])+1:].split("/"),
+
+                    print((dict_path.split("/"))[::-1])
+
+                    self._event_handler.on_statistics((dict_path.split("/"))[::-1],
                                                       self._total_metrics, self._total_quality)
 
+                    # self._event_handler.on_statistics(dict_path[len(args[DICT_ARG_DICT])+1:].split("/"),
+                    #                                   self._total_metrics, self._total_quality)
+
         except Exception as err:
-            print("_on_dict_file(): "+str(err))
+            print("_on_dict_file(): "+str(type(err))+": "+str(err))
 
         self._total_dicts += 1
 
