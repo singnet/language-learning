@@ -5,6 +5,10 @@ from decimal import *
 from common.absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
 from common.dirhelper import traverse_dir_tree, create_dir
 from common.parsemetrics import ParseMetrics, ParseQuality
+from common.fileconfman import JsonFileConfigManager
+from common.cliutils import handle_path_string
+from grammar_test.textfiledashb import TextFileDashboard
+
 from .lgmisc import create_grammar_dir
 from .optconst import *
 
@@ -18,6 +22,14 @@ __all__ = ['test_grammar', 'GrammarTester']
 class GrammarTestError(Exception):
     pass
 
+
+CONF_DICT_PATH = "input_grammar"
+CONF_CORP_PATH = "input_corpus"
+CONF_DEST_PATH = "output_path"
+CONF_REFR_PATH = "ref_path"
+CONF_GRMR_PATH = "grammar_root"
+CONF_TMPL_PATH = "template_path"
+CONF_LNK_LIMIT = "linkage_limit"
 
 # on_corpus_file() argument list indexes
 # [dest_path, lang_path, dict_path, corpus_path, output_path, reference_path]
@@ -211,13 +223,8 @@ class GrammarTester(AbstractGrammarTestClient):
                 # Invoke on_statistics() event handler
                 if self._is_dir_dict and self._event_handler is not None:
 
-                    print((dict_path.split("/"))[::-1])
-
                     self._event_handler.on_statistics((dict_path.split("/"))[::-1],
                                                       self._total_metrics, self._total_quality)
-
-                    # self._event_handler.on_statistics(dict_path[len(args[DICT_ARG_DICT])+1:].split("/"),
-                    #                                   self._total_metrics, self._total_quality)
 
         except Exception as err:
             print("_on_dict_file(): "+str(type(err))+": "+str(err))
@@ -302,3 +309,36 @@ def test_grammar(corpus_path: str, output_path: str, dict_path: str, grammar_pat
     gt = GrammarTester(grammar_path, template_path, linkage_limit, options, parser)
 
     return gt.test(dict_path, corpus_path, output_path, reference_path)
+
+def test_grammar2(conf_path: str, opts: int) -> (ParseMetrics, ParseQuality):
+
+    pm, pq = ParseMetrics(), ParseQuality()
+
+    try:
+        cfgman = JsonFileConfigManager(conf_path)
+        dboard = TextFileDashboard(cfgman)
+        parser = LGInprocParser()
+
+        # Get configuration parameters
+        config = cfgman.get_config("", "grammar-tester")
+
+        # Create GrammarTester instance
+        tester = GrammarTester(handle_path_string(config[0][CONF_GRMR_PATH]),
+                               handle_path_string(config[0][CONF_TMPL_PATH]),
+                               config[0][CONF_LNK_LIMIT], opts, parser, dboard)
+
+        # cfg = config[0]
+        for cfg in config:
+
+            # Run grammar test
+            pm, pq = tester.test(handle_path_string(cfg[CONF_DICT_PATH]), handle_path_string(cfg[CONF_CORP_PATH]),
+                                 handle_path_string(cfg[CONF_DEST_PATH]), handle_path_string(cfg[CONF_REFR_PATH]))
+
+        dboard.update_dashboard()
+
+        print(pm.text(pm))
+
+    except Exception as err:
+        print(str(err))
+    finally:
+        return pm, pq

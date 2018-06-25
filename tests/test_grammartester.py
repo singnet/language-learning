@@ -1,5 +1,5 @@
 import unittest
-from grammar_test.grammartester import GrammarTester, test_grammar
+from grammar_test.grammartester import GrammarTester, test_grammar, test_grammar2
 from grammar_test.lginprocparser import LGInprocParser
 from grammar_test.optconst import *
 
@@ -97,14 +97,6 @@ opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BI
 # dest = "/home/alex/data2/parses/PubMed-2018-06-01/ref"
 # ref = None
 
-CONF_DICT_PATH = "input_grammar"
-CONF_CORP_PATH = "input_corpus"
-CONF_DEST_PATH = "output_path"
-CONF_REFR_PATH = "ref_path"
-CONF_GRMR_PATH = "grammar_root"
-CONF_TMPL_PATH = "template_path"
-CONF_LNK_LIMIT = "linkage_limit"
-
 
 class GrammarTesterTestCase(unittest.TestCase):
 
@@ -112,35 +104,10 @@ class GrammarTesterTestCase(unittest.TestCase):
     def test_test_with_conf(self):
         conf_path = "test-data/config/AGI-2018.json"
 
-        try:
-            cfgman = JsonFileConfigManager(conf_path)
-            dboard = TextFileDashboard(cfgman)
-            parser = LGInprocParser()
-
-            # Get configuration parameters
-            config = cfgman.get_config("", "grammar-tester")
-
-            # Create GrammarTester instance
-            tester = GrammarTester(handle_path_string(config[0][CONF_GRMR_PATH]),
-                                   handle_path_string(config[0][CONF_TMPL_PATH]),
-                                   config[0][CONF_LNK_LIMIT], opts, parser, dboard)
-
-            cfg = config[0]
-            # for cfg in config:
-
-            # Run grammar test
-            pm, pq = tester.test(handle_path_string(cfg[CONF_DICT_PATH]), handle_path_string(cfg[CONF_CORP_PATH]),
-                                 handle_path_string(cfg[CONF_DEST_PATH]), handle_path_string(cfg[CONF_REFR_PATH]))
-
-            dboard.update_dashboard()
-
-            print(pm.text(pm))
-
-        except Exception as err:
-            print(str(err))
+        pm, pq = test_grammar2(conf_path, opts)
 
         # self.assertEqual(25, gt._total_dicts)
-        # self.assertEqual(88, pm.sentences)
+        self.assertEqual(88, pm.sentences)
 
     @unittest.skip
     def test_test(self):

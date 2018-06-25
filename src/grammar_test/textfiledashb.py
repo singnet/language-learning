@@ -52,22 +52,58 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
     def check_config(config):
         pass
 
+    # @staticmethod
+    # def prepare_format_string(frm_str: str):
+    #     prepared = frm_str.replace(r"=", "__")
+    #     prepared = prepared.replace(r"+", "_-")
+    #     prepared = prepared.replace(r":", "__")
+
     def on_statistics(self, nodes: list, metrics: ParseMetrics, quality: ParseQuality):
 
-        # Get row index by row key
-        row_key = self._config[CONF_ROW_KEY].format(*nodes)
-        row_ind = self._config[CONF_ROW_IND][row_key]
+        # row_key, col_key = None, None
+        row_ind, col_ind = None, None
 
-        # Get column index by name
-        col_key = self._config[CONF_COL_KEY].format(*nodes)
-        col_ind = self._config[CONF_COL_IND][col_key]
+        try:
+            # Get row and column keys
+            row_key = self._config[CONF_ROW_KEY].format(*nodes)
+            col_key = self._config[CONF_COL_KEY].format(*nodes)
+
+            print((row_key, col_key))
+
+            # Get row and column indexes
+            row_ind = self._config[CONF_ROW_IND][row_key]
+            col_ind = self._config[CONF_COL_IND][col_key]
+
+        except IndexError as err:
+            print("on_statatistics(): IndexError: " + str(err))
+            return
+
+        except KeyError as err:
+            print("on_statatistics(): KeyError: " + str(err))
+            return
 
         for row in row_ind:
             for col in col_ind:
-                # Get value key string by column index
-                val_str = self._config[CONF_VAL_KEYS][col].format(nodes=nodes,
-                                                                      parseability=metrics.parseability(metrics),
-                                                                      parsequality=quality.parse_quality(quality))
+
+                val_str = None
+
+                try:
+                    # Get value key string by column index
+                    val_str = self._config[CONF_VAL_KEYS][col].format(nodes=nodes,
+                                                                          parseability=metrics.parseability(metrics),
+                                                                          parsequality=quality.parse_quality(quality))
+
+                    # print(val_str)
+
+                except IndexError as err:
+                    print("on_statatistics():2: IndexError: " + str(err))
+                    continue
+
+                except KeyError as err:
+                    print("on_statatistics():2: KeyError: " + str(err))
+                    continue
+
+                print((row, col, val_str))
 
                 # Put value into the table
                 self.set_cell_by_indexes(row, col, val_str)

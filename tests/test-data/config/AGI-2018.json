@@ -56,8 +56,8 @@
         "row_key": "{2}-{1}",
         "col_key": "{0}",
         "value_keys": [
-          "{nodes[2]}",
-          "{nodes[1]}",
+          "{nodes[2]:<34}",
+          "{nodes[1]:<18}",
           "{parseability}",
           "{parseability}",
           "{parseability}",
@@ -93,17 +93,17 @@
           "POC-Turtle-no-LEFT-WALL-LG_ANY_all_parses": [8],
 
           "POC-English-NoAmb-LEFT-WALL+period-MST_fixed_manually": [9],
-          "POC-English-NoAmb-LEFT-WALL+period-R=6_Weight=6:R": [10],
-          "POC-English-NoAmb-LEFT-WALL+period-R=6_Weight=1": [11],
+          "POC-English-NoAmb-LEFT-WALL+period-R=6_distance=6:R": [10],
+          "POC-English-NoAmb-LEFT-WALL+period-R=6_distance=1": [11],
           "POC-English-NoAmb-LEFT-WALL+period-LG_ANY_all_parses": [12],
 
           "POC-English-Noamb-no-LEFT-WALL-MST_fixed_manually": [13],
-          "POC-English-Noamb-no-LEFT-WALL-R=6_Weight=6:R": [14],
-          "POC-English-Noamb-no-LEFT-WALL-R=6_Weight=1": [15],
+          "POC-English-Noamb-no-LEFT-WALL-R=6_distance=6:R": [14],
+          "POC-English-Noamb-no-LEFT-WALL-R=6_distance=1": [15],
           "POC-English-Noamb-no-LEFT-WALL-LG_ANY_all_parses": [16]
         },
         "col_indexes": {
-          "connectors-DRK-connectors": [2, 6],
+          "connectors-DRK-connectors": [0, 1, 2, 6],
           "connectors-DRK-disjuncts": [3, 7],
           "disjuncts-DRK-disjuncts": [4, 8],
           "disjuncts-ILE-disjuncts": [5, 9]
