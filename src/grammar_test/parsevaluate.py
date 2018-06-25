@@ -2,9 +2,9 @@ import sys
 import os
 
 
-from common.dirhelper import traverse_dir
+from ull.common.dirhelper import traverse_dir
 from .parsestat import parse_quality
-from common.parsemetrics import ParseQuality
+from ull.common.parsemetrics import ParseQuality
 
 
 __all__ = ['load_ull_file', 'get_parses', 'eval_parses', 'compare_ull_files', 'EvalError']

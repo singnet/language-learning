@@ -1,12 +1,12 @@
 import unittest
-from grammar_test.grammartester import GrammarTester, test_grammar, test_grammar2
+from grammar_test.grammartester import GrammarTester, test_grammar, test_grammar_cfg
 from grammar_test.lginprocparser import LGInprocParser
 from grammar_test.optconst import *
 
 import cProfile
 
-from common.fileconfman import JsonFileConfigManager
-from common.cliutils import handle_path_string
+from ull.common.fileconfman import JsonFileConfigManager
+from ull.common.cliutils import handle_path_string
 from grammar_test.textfiledashb import TextFileDashboard
 
 # dict = "/usr/local/share/link-grammar/en"
@@ -30,7 +30,8 @@ from grammar_test.textfiledashb import TextFileDashboard
 tmpl = "/home/alex/data/dict/poc-turtle"
 grmr = "/home/alex/data/dict"
 limit = 100
-opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BIT_RM_DIR #| BIT_DPATH_CREATE | BIT_LOC_LANG | BIT_PARSE_QUALITY #| BIT_ULL_IN #| BIT_OUTPUT_DIAGRAM #| BIT_SEP_STAT
+# opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BIT_RM_DIR #| BIT_DPATH_CREATE | BIT_LOC_LANG | BIT_PARSE_QUALITY #| BIT_ULL_IN #| BIT_OUTPUT_DIAGRAM #| BIT_SEP_STAT
+opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BIT_RM_DIR | BIT_DPATH_CREATE | BIT_LOC_LANG | BIT_PARSE_QUALITY #| BIT_ULL_IN #| BIT_OUTPUT_DIAGRAM #| BIT_SEP_STAT
 
 # # Gutenberg Children Parses
 # dict = "en"
@@ -98,13 +99,20 @@ opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BI
 # ref = None
 
 
+
 class GrammarTesterTestCase(unittest.TestCase):
+
+    # def test_snippet(self):
+    #     cfg_options = {"keep_caps": True, "keep_rwall": True, "parse_format": "diagram"}
+    #
+    #     print(get_options(cfg_options))
+
 
     # @unittest.skip
     def test_test_with_conf(self):
         conf_path = "test-data/config/AGI-2018.json"
 
-        pm, pq = test_grammar2(conf_path, opts)
+        pm, pq = test_grammar_cfg(conf_path)
 
         # self.assertEqual(25, gt._total_dicts)
         self.assertEqual(88, pm.sentences)

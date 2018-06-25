@@ -1,7 +1,7 @@
-from common.absclient import AbstractDashboardClient, DashboardError, AbstractStatEventHandler
-from common.parsemetrics import ParseMetrics, ParseQuality
-from common.absclient import AbstractConfigClient
-from common.cliutils import handle_path_string
+from ull.common.absclient import AbstractDashboardClient, DashboardError, AbstractStatEventHandler
+from ull.common.parsemetrics import ParseMetrics, ParseQuality
+from ull.common.absclient import AbstractConfigClient
+from ull.common.cliutils import handle_path_string
 
 CONF_ROW_KEY = "row_key"
 CONF_ROW_IND = "row_indexes"
@@ -52,12 +52,6 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
     def check_config(config):
         pass
 
-    # @staticmethod
-    # def prepare_format_string(frm_str: str):
-    #     prepared = frm_str.replace(r"=", "__")
-    #     prepared = prepared.replace(r"+", "_-")
-    #     prepared = prepared.replace(r":", "__")
-
     def on_statistics(self, nodes: list, metrics: ParseMetrics, quality: ParseQuality):
 
         # row_key, col_key = None, None
@@ -67,8 +61,6 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
             # Get row and column keys
             row_key = self._config[CONF_ROW_KEY].format(*nodes)
             col_key = self._config[CONF_COL_KEY].format(*nodes)
-
-            print((row_key, col_key))
 
             # Get row and column indexes
             row_ind = self._config[CONF_ROW_IND][row_key]
@@ -90,10 +82,8 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
                 try:
                     # Get value key string by column index
                     val_str = self._config[CONF_VAL_KEYS][col].format(nodes=nodes,
-                                                                          parseability=metrics.parseability(metrics),
-                                                                          parsequality=quality.parse_quality(quality))
-
-                    # print(val_str)
+                                                                      parseability=metrics.parseability_str(metrics),
+                                                                      parsequality=quality.parse_quality_str(quality))
 
                 except IndexError as err:
                     print("on_statatistics():2: IndexError: " + str(err))
@@ -102,8 +92,6 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
                 except KeyError as err:
                     print("on_statatistics():2: KeyError: " + str(err))
                     continue
-
-                print((row, col, val_str))
 
                 # Put value into the table
                 self.set_cell_by_indexes(row, col, val_str)
@@ -154,7 +142,7 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
         for row in range(0, self._row_count):
             for col in range(0, self._col_count):
                 if self._dashboard[row][col] is None:
-                    self._dashboard[row][col] = " "
+                    self._dashboard[row][col] = "  ---  "
 
     def update_dashboard(self):
         try:

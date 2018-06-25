@@ -1,6 +1,6 @@
 import unittest
 
-from common.dirhelper import *
+from ull.common.dirhelper import *
 
 
 class DirHelperTestCase(unittest.TestCase):

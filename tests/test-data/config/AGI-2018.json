@@ -10,7 +10,13 @@
         "output_path": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-NoAmb-LEFT-WALL+period",
         "ref_path": "~/data/poc-english/poc_english_noamb_parse_ideal.txt",
         "parse_format": "ull",
-        "linkage_limit": "100"
+        "linkage_limit": "100",
+        "rm_grammar_dir": true,
+        "use_link_parser": true,
+        "ull_input": true,
+        "ignore_left_wall": true,
+        "ignore_period": true,
+        "calc_parse_quality": true
       },
       {
         "input_grammar": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-Noamb-no-LEFT-WALL",
@@ -20,27 +26,45 @@
         "output_path": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-English-Noamb-no-LEFT-WALL",
         "ref_path": "~/data/poc-english/poc_english_noamb_parse_ideal.txt",
         "parse_format": "ull",
-        "linkage_limit": "100"
+        "linkage_limit": "100",
+        "rm_grammar_dir": true,
+        "use_link_parser": true,
+        "ull_input": true,
+        "ignore_left_wall": true,
+        "ignore_period": true,
+        "calc_parse_quality": true
       },
       {
         "input_grammar": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-Turtle-LEFT-WALL+period",
-        "input_corpus": "~/data/poc-english/poc_english_noamb.txt",
+        "input_corpus": "~/data/parses/poc-turtle/poc-turtle-parses-expected.txt",
         "template_path": "~/data/dict/poc-turtle",
         "grammar_root": "~/data/dict",
         "output_path": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-Turtle-LEFT-WALL+period",
-        "ref_path": "~/data/poc-english/poc_english_noamb_parse_ideal.txt",
+        "ref_path": "~/data/parses/poc-turtle/poc-turtle-parses-expected.txt",
         "parse_format": "ull",
-        "linkage_limit": "100"
+        "linkage_limit": "100",
+        "rm_grammar_dir": true,
+        "use_link_parser": true,
+        "ull_input": true,
+        "ignore_left_wall": true,
+        "ignore_period": true,
+        "calc_parse_quality": true
       },
       {
         "input_grammar": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-Turtle-no-LEFT-WALL",
-        "input_corpus": "~/data/poc-english/poc_english_noamb.txt",
+        "input_corpus": "~/data/parses/poc-turtle/poc-turtle-parses-expected.txt",
         "template_path": "~/data/dict/poc-turtle",
         "grammar_root": "~/data/dict",
         "output_path": "~/data2/parses/AGI-2018-paper-data-2018-04-22/POC-Turtle-no-LEFT-WALL",
-        "ref_path": "~/data/poc-english/poc_english_noamb_parse_ideal.txt",
+        "ref_path": "~/data/parses/poc-turtle/poc-turtle-parses-expected.txt",
         "parse_format": "ull",
-        "linkage_limit": "100"
+        "linkage_limit": "100",
+        "rm_grammar_dir": true,
+        "use_link_parser": true,
+        "ull_input": true,
+        "ignore_left_wall": true,
+        "ignore_period": true,
+        "calc_parse_quality": true
       }
     ]
   },

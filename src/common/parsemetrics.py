@@ -39,6 +39,10 @@ class ParseMetrics():
         return stat.average_parsed_ratio / stat.sentences * Decimal("100")
 
     @staticmethod
+    def parseability_str(stat) -> str:
+        return "{0:06.2f}%".format(stat.parseability(stat))
+
+    @staticmethod
     def text(stat) -> str:
         return  "Total sentences parsed in full:\t{0[0]:2.2f}%\n" \
                 "Total sentences not parsed at all:\t{0[1]:2.2f}%\n" \
@@ -70,47 +74,51 @@ class ParseMetrics():
 
 class ParseQuality():
     def __init__(self):
-        self.total = Decimal('0.0')
-        self.missing = Decimal('0.0')
-        self.extra = Decimal('0.0')
-        self.ignored = Decimal('0.0')
-        self.quality = Decimal('0.0')
-        self.sentences = Decimal('0.0')
+        self.total = Decimal('0.00')
+        self.missing = Decimal('0.00')
+        self.extra = Decimal('0.00')
+        self.ignored = Decimal('0.00')
+        self.quality = Decimal('0.00')
+        self.sentences = Decimal('0.00')
 
     @staticmethod
     def avg_total_links(stat) -> Decimal:
         if not stat.sentences:
-            return Decimal('0.0')
+            return Decimal('0.00')
 
         return stat.total / stat.sentences
 
     @staticmethod
     def avg_ignored_links(stat) -> Decimal:
         if not stat.sentences:
-            return Decimal('0.0')
+            return Decimal('0.00')
 
         return stat.ignored / stat.sentences
 
     @staticmethod
     def avg_missing_links(stat) -> Decimal:
         if not stat.sentences:
-            return Decimal('0.0')
+            return Decimal('0.00')
 
         return stat.missing / stat.sentences
 
     @staticmethod
     def avg_extra_links(stat) -> Decimal:
         if not stat.sentences:
-            return Decimal('0.0')
+            return Decimal('0.00')
 
         return stat.extra / stat.sentences
 
     @staticmethod
     def parse_quality(stat) -> Decimal:
         if not stat.sentences:
-            return Decimal('0.0')
+            return Decimal('0.00')
 
         return stat.quality / stat.sentences * Decimal('100.0')
+
+    @staticmethod
+    def parse_quality_str(stat) -> str:
+        return "{0:06.2f}%".format(stat.parse_quality(stat))
 
     @staticmethod
     def text(stat) -> str:

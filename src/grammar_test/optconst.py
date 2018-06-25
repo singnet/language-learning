@@ -4,7 +4,7 @@ __all__ = [
     'BIT_CAPS', 'BIT_RWALL', 'BIT_STRIP', 'BIT_OUTPUT', 'BIT_ULL_IN', 'BIT_RM_DIR',
     'BIT_OUTPUT_DIAGRAM', 'BIT_OUTPUT_POSTSCRIPT', 'BIT_OUTPUT_CONST_TREE', 'BIT_OUTPUT_ALL',
     'BIT_BEST_LINKAGE', 'BIT_DPATH_CREATE', 'BIT_LG_EXE', 'BIT_NO_LWALL', 'BIT_SEP_STAT', 'BIT_LOC_LANG',
-    'BIT_PARSE_QUALITY', 'BIT_NO_PERIOD', 'BIT_ULL_NO_LWALL', 'BIT_GRSUBDIR_CREATE'
+    'BIT_PARSE_QUALITY', 'BIT_NO_PERIOD', 'BIT_ULL_NO_LWALL', 'BIT_GRSUBDIR_CREATE', 'get_options'
 ]
 
 # Output format constants. If no bits set, ULL defacto format is used.
@@ -33,3 +33,41 @@ BIT_PARSE_QUALITY       = (1<<15)           # Compare links of .ull file and ref
 BIT_ULL_NO_LWALL        = (1<<16)           # Exclude LEFT-WALL from ULL output
 BIT_GRSUBDIR_CREATE     = (1<<17)           # Create subdirectories named after each grammar file if grammar directory
                                             #   has multiple .dict files in it.
+
+config_options = {
+    "keep_caps": BIT_CAPS,
+    "keep_rwall": BIT_RWALL,
+    "strip_suffix": BIT_STRIP,
+    "ull_input": BIT_ULL_IN,
+    "rm_grammar_dir": BIT_RM_DIR,
+    "dup_dict_path": BIT_DPATH_CREATE,
+    "use_link_parser": BIT_LG_EXE,
+    "ignore_left_wall": BIT_NO_LWALL,
+    "ignore_period": BIT_NO_PERIOD,
+    "separate_stat": BIT_SEP_STAT,
+    "store_dict_localy": BIT_LOC_LANG,
+    "calc_parse_quality": BIT_PARSE_QUALITY,
+    "no_left_wall_in_ull": BIT_ULL_NO_LWALL
+}
+
+output_format = {
+    "diagram": BIT_OUTPUT_DIAGRAM,
+    "postscript": BIT_OUTPUT_POSTSCRIPT,
+    "constituent": BIT_OUTPUT_CONST_TREE
+}
+
+def get_options(cfg_options: dict) -> int:
+    opts = 0
+
+    for opt in cfg_options:
+
+        if opt in config_options and cfg_options[opt] == True:
+            opts |= config_options[opt]
+
+        if opt == "parse_format":
+            frm = cfg_options[opt]
+
+            if frm in output_format:
+                opts |= output_format[frm]
+
+    return opts

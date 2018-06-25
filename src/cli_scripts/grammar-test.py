@@ -5,7 +5,8 @@ import os
 import getopt
 import platform
 
-from ull.grammartest import test_grammar, LGParseError, handle_path_string, strip_quotes, LG_DICT_PATH
+from ull.common import handle_path_string, strip_quotes
+from ull.grammartest import test_grammar, test_grammar_cfg, GrammarTestError, LG_DICT_PATH  # , LGParseError
 from ull.grammartest.optconst import *
 
 __version__ = "3.0.0"
@@ -50,6 +51,8 @@ Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIO
         -R  --reference         Path to reference file if single file specified by option '-i' as input corpus or path
                                 to a directory with a number of reference files. In later case files with the same names
                                 are being compared.
+        -C  <json-config-file>  Force the script to use configuration data from JSON configuration file. If this option
+                                is set, other options passed to the script are ignored.
     """
 
     dict_path       = None
@@ -60,18 +63,20 @@ Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIO
     grammar_path    = None
     template_path   = None
     reference_path  = None
+    config_path     = None
 
     print("grammar-test.py ver." + __version__)
     print("Python v." + platform.python_version())
 
     try:
-        opts, args = getopt.getopt(argv, "hcwrnubqexsLd:i:o:l:g:t:f:R:", ["help", "caps", "right-wall", "rm-dir",
+        opts, args = getopt.getopt(argv, "hcwrnubqexsLd:i:o:l:g:t:f:R:C:", ["help", "caps", "right-wall", "rm-dir",
                                                                         "no-strip", "ull-input", "best-linkage",
                                                                         "dict-path-recreate", "link-parser-exe",
                                                                         "no-left-wall", "separate-stat",
                                                                         "local-lang-dir", "dictionary=", "input=",
                                                                         "output=", "linkage-limit=", "grammar-dir=",
-                                                                        "template-dir=", "output-format", "reference"])
+                                                                        "template-dir=", "output-format", "reference=",
+                                                                        "config="])
 
         for opt, arg in opts:
             if opt in ("-h", "--help"):
@@ -122,6 +127,8 @@ Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIO
             elif opt in ("-R", "--reference"):
                 reference_path = handle_path_string(arg)
                 options |= BIT_PARSE_QUALITY
+            elif opt in ("-C", "--reference"):
+                config_path = handle_path_string(arg)
 
         # print("options=" + bin(options) + " (" + hex(options) + ")")
 
@@ -129,34 +136,40 @@ Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIO
         print(main.__doc__)
         return 1
 
-    if input_path is None:
-        print("Error: Input file path is not specified.")
-        print(main.__doc__)
-        return 1
+    # If configuration file is specified all other options are ignored
+    if config_path is None:
 
-    if linkage_limit is None:
-        linkage_limit = 1
+        if input_path is None:
+            print("Error: Input file path is not specified.")
+            print(main.__doc__)
+            return 1
 
-    if template_path is None:
-        template_path = "en"
+        if linkage_limit is None:
+            linkage_limit = 1
 
-    if grammar_path is None:
-        grammar_path = LG_DICT_PATH
+        if template_path is None:
+            template_path = "en"
 
-    if output_path is None:
-        output_path = os.environ['PWD']
+        if grammar_path is None:
+            grammar_path = LG_DICT_PATH
 
-    if dict_path is None:
-        dict_path = "en"
+        if output_path is None:
+            output_path = os.environ['PWD']
+
+        if dict_path is None:
+            dict_path = "en"
 
     try:
-        test_grammar(input_path, output_path, dict_path, grammar_path, template_path,
-                           linkage_limit, options, reference_path)
+        if config_path is None:
+            test_grammar(input_path, output_path, dict_path, grammar_path, template_path,
+                               linkage_limit, options, reference_path)
 
-        # parse_corpus_files(input_path, output_path, dict_path, grammar_path, template_path,
-        #                    linkage_limit, options, reference_path)
+            # parse_corpus_files(input_path, output_path, dict_path, grammar_path, template_path,
+            #                    linkage_limit, options, reference_path)
+        else:
+            test_grammar_cfg(config_path)
 
-    except LGParseError as err:
+    except GrammarTestError as err:
         print(str(err))
         return 2
 
@@ -165,6 +178,7 @@ Usage: grammar-test.py -i <input_path> [-o <output_path> -d <dict_path>]  [OPTIO
         return 3
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

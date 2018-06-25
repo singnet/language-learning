@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from common.cliutils import *
+from ull.common.cliutils import *
 
 
 class TestCliUtils(unittest.TestCase):

@@ -4,8 +4,8 @@ import os
 from grammar_test.textfiledashb import TextFileDashboard, DashboardError
 from decimal import Decimal
 
-from common.fileconfman import JsonFileConfigManager
-from common.parsemetrics import ParseMetrics, ParseQuality
+from ull.common.fileconfman import JsonFileConfigManager
+from ull.common.parsemetrics import ParseMetrics, ParseQuality
 
 
 class TextFileDashTestCase(unittest.TestCase):

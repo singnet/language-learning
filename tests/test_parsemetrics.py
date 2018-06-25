@@ -1,7 +1,7 @@
 import unittest
 import sys
 
-from common.parsemetrics import *
+from ull.common.parsemetrics import *
 
 
 class TestMetrics(unittest.TestCase):

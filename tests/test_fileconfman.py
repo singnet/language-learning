@@ -2,8 +2,8 @@ import unittest
 import os, sys
 from decimal import Decimal
 
-from common.fileconfman import JsonFileConfigManager
-from common.parsemetrics import ParseMetrics
+from ull.common.fileconfman import JsonFileConfigManager
+from ull.common.parsemetrics import ParseMetrics
 
 conf_path = "test-data/config/config-example-01.json"
 # conf_path = "/home/alex/PycharmProjects/language-learning/tests/test-data/config/config-example-01.json"

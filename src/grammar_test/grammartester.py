@@ -2,12 +2,12 @@ import os
 import sys
 from decimal import *
 
-from common.absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
-from common.dirhelper import traverse_dir_tree, create_dir
-from common.parsemetrics import ParseMetrics, ParseQuality
-from common.fileconfman import JsonFileConfigManager
-from common.cliutils import handle_path_string
-from grammar_test.textfiledashb import TextFileDashboard
+from ull.common.absclient import AbstractGrammarTestClient, AbstractStatEventHandler, AbstractFileParserClient
+from ull.common.dirhelper import traverse_dir_tree, create_dir
+from ull.common.parsemetrics import ParseMetrics, ParseQuality
+from ull.common.fileconfman import JsonFileConfigManager
+from ull.common.cliutils import handle_path_string
+from ull.grammartest.textfiledashb import TextFileDashboard
 
 from .lgmisc import create_grammar_dir
 from .optconst import *
@@ -16,7 +16,7 @@ from .lginprocparser import LGInprocParser
 from .lgapiparser import LGApiParser
 
 
-__all__ = ['test_grammar', 'GrammarTester']
+__all__ = ['test_grammar', 'test_grammar_cfg', 'GrammarTester', 'GrammarTestError']
 
 
 class GrammarTestError(Exception):
@@ -50,7 +50,7 @@ DICT_ARG_REFF = 3
 
 class GrammarTester(AbstractGrammarTestClient):
 
-    def __init__(self, grmr: str, tmpl: str, limit: int, options: int, parser: AbstractFileParserClient,
+    def __init__(self, grmr: str, tmpl: str, limit: int, parser: AbstractFileParserClient,
                  evt_handler: AbstractStatEventHandler=None):
 
         if parser is None:
@@ -67,7 +67,7 @@ class GrammarTester(AbstractGrammarTestClient):
         self._grammar_root = grmr
         self._template_dir = tmpl
         self._linkage_limit = limit
-        self._options = options
+        self._options = 0  # options
         self._is_dir_corpus = False
         self._is_dir_dict = False
         self._total_metrics = ParseMetrics()
@@ -218,6 +218,7 @@ class GrammarTester(AbstractGrammarTestClient):
                 # stat_suffix = "2" if (self._options & BIT_LG_EXE) == BIT_LG_EXE else ""
                 stat_path = dest_path + "/" + os.path.split(corp_path)[1] + ".stat" #+ stat_suffix
 
+                # Write statistics summary to a file
                 self._save_stat(stat_path, self._total_metrics, self._total_quality)
 
                 # Invoke on_statistics() event handler
@@ -231,19 +232,21 @@ class GrammarTester(AbstractGrammarTestClient):
 
         self._total_dicts += 1
 
-    def test(self, dict_path: str, corpus_path: str, output_path: str, reference_path: str) \
+    def test(self, dict_path: str, corpus_path: str, output_path: str, reference_path: str, options: int) \
             -> (ParseMetrics, ParseQuality):
         """
         Main method to initiate grammar test.
 
-        :param dict_path: Path to a dictionary file or directory.
-        :param corpus_path: Path to a corpus file or corpus root directory.
-        :param output_path: Output root path.
-        :param reference_path: Path to a reference file or reference root directory. In case of directory we assume
+        :param dict_path:       Path to a dictionary file or directory.
+        :param corpus_path:     Path to a corpus file or corpus root directory.
+        :param output_path:     Output root path.
+        :param reference_path:  Path to a reference file or reference root directory. In case of directory we assume
                                 that it has the same internal structure with the same set of files in it as corpus
                                 root directory.
+        :param options:         Bitmask with parse options.
         :return:
         """
+        self._options = options
         self._total_dicts = 0
         self._is_dir_corpus = os.path.isdir(corpus_path)
         self._is_dir_dict = os.path.isdir(dict_path)
@@ -304,14 +307,21 @@ def test_grammar(corpus_path: str, output_path: str, dict_path: str, grammar_pat
                             quality estimation.
     :return: Tuple (ParseMetrics, ParseQuality)
     """
-    parser = LGInprocParser(linkage_limit) if options & BIT_LG_EXE else LGApiParser(linkage_limit)
+    # parser = LGInprocParser(linkage_limit) if options & BIT_LG_EXE else LGApiParser(linkage_limit)
+    parser = LGInprocParser(linkage_limit)
 
-    gt = GrammarTester(grammar_path, template_path, linkage_limit, options, parser)
+    gt = GrammarTester(grammar_path, template_path, linkage_limit, parser)
 
-    return gt.test(dict_path, corpus_path, output_path, reference_path)
+    return gt.test(dict_path, corpus_path, output_path, reference_path, options)
 
-def test_grammar2(conf_path: str, opts: int) -> (ParseMetrics, ParseQuality):
 
+def test_grammar_cfg(conf_path: str) -> (ParseMetrics, ParseQuality):
+    """
+    Test grammar using configuration(s) from a JSON file
+
+    :param conf_path:   Path to a configuration file
+    :return:            Tuple (ParseMetrics, ParseQuality) of the last processed test.
+    """
     pm, pq = ParseMetrics(), ParseQuality()
 
     try:
@@ -325,18 +335,20 @@ def test_grammar2(conf_path: str, opts: int) -> (ParseMetrics, ParseQuality):
         # Create GrammarTester instance
         tester = GrammarTester(handle_path_string(config[0][CONF_GRMR_PATH]),
                                handle_path_string(config[0][CONF_TMPL_PATH]),
-                               config[0][CONF_LNK_LIMIT], opts, parser, dboard)
+                               config[0][CONF_LNK_LIMIT], parser, dboard)
 
-        # cfg = config[0]
+        # Config file may have multiple configurations for one component
         for cfg in config:
 
             # Run grammar test
             pm, pq = tester.test(handle_path_string(cfg[CONF_DICT_PATH]), handle_path_string(cfg[CONF_CORP_PATH]),
-                                 handle_path_string(cfg[CONF_DEST_PATH]), handle_path_string(cfg[CONF_REFR_PATH]))
+                                 handle_path_string(cfg[CONF_DEST_PATH]), handle_path_string(cfg[CONF_REFR_PATH]),
+                                 get_options(cfg))
 
+        # Save dashboard data to whatever source the dashboard is bounded to
         dboard.update_dashboard()
 
-        print(pm.text(pm))
+        # print(pm.text(pm))
 
     except Exception as err:
         print(str(err))
