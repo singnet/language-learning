@@ -92,11 +92,11 @@ opts = BIT_SEP_STAT | BIT_LG_EXE | BIT_NO_LWALL | BIT_NO_PERIOD | BIT_STRIP | BI
 
 
 
-# # PubMed-2018-06-01 parse for ULL reference
-# dict = "en"
-# corp = "/home/alex/data2/parses/PubMed-2018-06-01/data"
-# dest = "/home/alex/data2/parses/PubMed-2018-06-01/ref"
-# ref = None
+# PubMed-2018-06-01 parse for ULL reference
+dict = "en"
+corp = "/home/alex/data2/parses/PubMed-2018-06-01/data"
+dest = "/home/alex/data2/parses/PubMed-2018-06-01/ref"
+ref = None
 
 
 
@@ -108,7 +108,7 @@ class GrammarTesterTestCase(unittest.TestCase):
     #     print(get_options(cfg_options))
 
 
-    # @unittest.skip
+    @unittest.skip
     def test_test_with_conf(self):
         conf_path = "test-data/config/AGI-2018.json"
 
@@ -117,12 +117,12 @@ class GrammarTesterTestCase(unittest.TestCase):
         # self.assertEqual(25, gt._total_dicts)
         self.assertEqual(88, pm.sentences)
 
-    @unittest.skip
+    # @unittest.skip
     def test_test(self):
         pr = LGInprocParser()
 
-        gt = GrammarTester(grmr, tmpl, limit, opts, pr)
-        pm, pq = gt.test(dict, corp, dest, ref)
+        gt = GrammarTester(grmr, tmpl, limit, pr)
+        pm, pq = gt.test(dict, corp, dest, ref, opts)
 
         print(pm.text(pm))
 

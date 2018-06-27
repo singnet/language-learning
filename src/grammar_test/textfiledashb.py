@@ -54,6 +54,10 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
 
     def on_statistics(self, nodes: list, metrics: ParseMetrics, quality: ParseQuality):
 
+        # Return if dashboard is not configured.
+        if self._config is None:
+            return
+
         # row_key, col_key = None, None
         row_ind, col_ind = None, None
 
@@ -139,18 +143,22 @@ class TextFileDashboard(AbstractDashboardClient, AbstractStatEventHandler):
         self._dashboard[self._get_row_index(row_name)][self._get_col_index(col_name)] = value
 
     def _fill_empty_cells(self):
+        """ Replace None with text string """
         for row in range(0, self._row_count):
             for col in range(0, self._col_count):
                 if self._dashboard[row][col] is None:
-                    self._dashboard[row][col] = "  ---  "
+                    self._dashboard[row][col] = "  N/A  "
 
     def update_dashboard(self):
+
+        # Return if dashboard is not configured.
+        if self._config is None:
+            return
+
         try:
             self._fill_empty_cells()
 
             with open(self._path, "w") as file:
-                # if hasattr(self, "_col_names") and len(self._col_names) > 0:
-                #     print('"' + '";"'.join(list(self._col_names.keys())) + '"', file=file)
 
                 for row in self._dashboard:
                     print('"' + '";"'.join(row) + '"', file=file)
