@@ -29,4 +29,5 @@
 
 LEFT-WALL: {Wa+} & {WV+} & {Xp+};
 
+% UNKNOWN-WORD comment to make sure dictionary version is properly distiguished
 <UNKNOWN-WORD>: XXX+;

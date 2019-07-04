@@ -1,6 +1,8 @@
 from subprocess import PIPE, Popen
 from typing import Tuple, Optional
 import os
+import re
+
 
 class LGVersionParseError(Exception):
     pass
@@ -83,6 +85,30 @@ def get_lg_version() -> (str, str):
     return version, dict_path
 
 
+# def get_lg_dict_version(dict_path: str) -> str:
+#     """
+#     Return Link Grammar version that can be used with dictionary specified by 'dict_path'
+#
+#     :param dict_path:   Path to LG dictionary file/directory
+#     :return:
+#     """
+#
+#     if os.path.isdir(dict_path):
+#         dict_path += "/4.0.dict"
+#
+#     with open(dict_path, "r") as file:
+#         text = file.read()
+#
+#         # Find 'UNKNOWN-WORD' rule
+#         pos = text.find("UNKNOWN-WORD")
+#
+#         # Any LG version can be used if the rule is not found
+#         if pos < 0:
+#             return "0.0.0"
+#
+#         # For LG 5.5.x 'UNKNOWN-WORD' should be enclosed in '<>'
+#         return "5.5.0" if pos > 0 and text[pos-1:pos] == "<" else "5.4.0"
+
 def get_lg_dict_version(dict_path: str) -> str:
     """
     Return Link Grammar version that can be used with dictionary specified by 'dict_path'
@@ -90,12 +116,15 @@ def get_lg_dict_version(dict_path: str) -> str:
     :param dict_path:   Path to LG dictionary file/directory
     :return:
     """
+    re_dict_rule = re.compile(r'^([^%\n][<]?UNKNOWN-WORD[>]?\s*:.+?;\s*)$', re.M | re.S)
 
     if os.path.isdir(dict_path):
         dict_path += "/4.0.dict"
 
     with open(dict_path, "r") as file:
         text = file.read()
+
+        text = "\n".join(re.findall(re_dict_rule, text))
 
         # Find 'UNKNOWN-WORD' rule
         pos = text.find("UNKNOWN-WORD")
