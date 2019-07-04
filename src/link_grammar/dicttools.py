@@ -205,13 +205,15 @@ def read_dict_rules(file_path: str) -> []:
     :param dict_path:       Path to a .dict file
     :return:                List of DictRule
     """
-    reDictRule = re.compile(r'^% ([A-Z]{3})(?:(?:\n|\r\n?)+(.+)\:){1}(?:(?:\n|\r\n?)+(.+)){1}', re.M)
+    re_dict_rule = re.compile(r'^% ([A-Z]{2,12})(?:(?:\n|\r\n?)+(.+):){1}(?:(?:\n|\r\n?)+(.+)){1}', re.M)
+
+    # reDictRule = re.compile(r'^% ([A-Z]{3})(?:(?:\n|\r\n?)+(.+)\:){1}(?:(?:\n|\r\n?)+(.+)){1}', re.M)
 
     # Read the whole file at once
     with open(file_path, "r") as dict:
         file_data = dict.read()
 
-    return [DictRule(parse[0], parse[1], parse[2][:-1]) for parse in re.findall(reDictRule, file_data)]
+    return [DictRule(parse[0], parse[1], parse[2][:-1]) for parse in re.findall(re_dict_rule, file_data)]
 
 
 def save_dict_rules(dst_dict_path: str, rules: List[DictRule]) -> None:
