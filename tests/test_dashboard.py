@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 from src.dash_board.textdashboard import TextFileDashboard, TextFileDashboardComponent
 from src.pipeline.pipelinetree import get_component
@@ -86,6 +87,27 @@ more_headers =   {
   }
 
 
+multi =   {
+    "component": "dash-board",
+    "type": "static",
+    "instance-name": "stat",
+    "parameters": {
+        "board_type": "file",
+        "file_path":  "/var/tmp/dash-board-multi/test-summary.txt",
+        "board_name": "test-summary",
+        "row_count": 2,
+        "col_count": 3,
+        "col_headers": [
+          [
+            {"title": "CORPUS"},
+            {"title": "MWC1"},
+            {"title": "MWC2"}
+          ]
+        ],
+        "multi_access": True
+    }
+  }
+
 
 class DashboardTestCase(unittest.TestCase):
     def setUp(self) -> None:
@@ -133,6 +155,7 @@ class DashboardTestCase(unittest.TestCase):
 
     def test_component(self):
         board = get_component("dash-board", conf["parameters"])
+        board.set(row="1+1", col="1+ 3", val="23")
         self.assertTrue(True, True)
 
     def test_less_headers(self):
@@ -142,6 +165,19 @@ class DashboardTestCase(unittest.TestCase):
     def test_more_headers(self):
         board = get_component("dash-board", more_headers["parameters"])
         self.assertTrue(True, True)
+
+    def test_multi_access(self):
+        conf_path = "tests/test-data/dash-board-multi"
+        dest_path = "/var/tmp/dash-board-multi"
+
+        if os.path.isdir(dest_path):
+            shutil.rmtree(dest_path)
+
+        shutil.copytree(conf_path, dest_path)
+
+        board = get_component("dash-board", multi["parameters"])
+        board.set(row="1", col="2", val="0.9")
+        board.set(row="2", col="2", val="1.0")
 
 
 if __name__ == '__main__':

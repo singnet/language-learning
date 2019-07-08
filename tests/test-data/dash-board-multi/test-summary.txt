@@ -1,0 +1,3 @@
+CORPUS  MWC1    MWC2
+abs     0.55    N/A
+lge     0.89    N/A

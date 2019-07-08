@@ -1,4 +1,8 @@
+import re
+import os
+import time
 import logging
+from typing import Optional
 from ..common.absclient import AbstractDashboardClient, DashboardError, AbstractPipelineComponent
 from ..common.cliutils import handle_path_string
 
@@ -15,6 +19,35 @@ CONF_COL_COUNT = "col_count"
 CONF_FILE_PATH = "file_path"
 CONF_COL_HEADERS = "col_headers"
 
+
+class ExclusiveLockError(Exception):
+    pass
+
+
+class ExclusiveLock:
+    """
+    Exclusive file lock class which is currently implemented as a simple flag file.
+
+    """
+    def __init__(self, file_path, delay_sec: float=0.001, attempts: int=3):
+
+        self._file_path = f"{file_path}.lock"
+
+        while os.path.isfile(self._file_path) and attempts:
+            time.sleep(delay_sec)
+            attempts -= 1
+
+        if attempts:
+            with open(self._file_path, "w") as file:
+                return
+
+        raise ExclusiveLockError(f"Unable to open {self._file_path} exclusively.")
+
+    def __del__(self):
+        if os.path.isfile(self._file_path):
+            os.remove(self._file_path)
+
+
 class TextFileDashboard(AbstractDashboardClient):
     """
     Class which implements text file serialization.
@@ -24,6 +57,8 @@ class TextFileDashboard(AbstractDashboardClient):
 
         self._logger = logging.getLogger("TextFileDashboard")
         self.check_config(self)
+
+        self._multi_access = config.get("multi_access", False)
 
         self._path = handle_path_string(config[CONF_FILE_PATH])
         self._row_count = config[CONF_ROW_COUNT] + len(config.get(CONF_COL_HEADERS, []))
@@ -104,10 +139,38 @@ class TextFileDashboard(AbstractDashboardClient):
                 else:
                     self._dashboard[row][col] = str(self._dashboard[row][col])
 
+    def _update_table(self):
+        """ Update current table from already existing file """
+        lock = ExclusiveLock(self._path)
+
+        with open(self._path, "r") as file:
+            table = file.readlines()
+
+        # Check if table has the same dimentions
+        if len(table) != self._row_count:
+            raise DashboardError(f"Table read from the existing file '{self._path}' has different number of rows.")
+
+        # Update table read from the file with the current table data
+        for row in range(self._row_count):
+            row_cells = table[row].split()
+
+            cell_count = len(row_cells)
+
+            if cell_count != self._col_count:
+                raise DashboardError(f"Number of cells mismatch in row={row}, {cell_count} != {self._col_count}")
+
+            for col in range(self._col_count):
+                if self._dashboard[row][col] is None:
+                    self._dashboard[row][col] = row_cells[col].strip()
+
+        del lock
 
     def update_dashboard(self) -> None:
 
         try:
+            if self._multi_access:
+                self._update_table()
+
             self._fill_empty_cells()
 
             with open(self._path, "w") as file:
@@ -165,10 +228,26 @@ class TextFileDashboardComponent(AbstractPipelineComponent):
     def __del__(self):
         self._board.update_dashboard()
 
+    @staticmethod
+    def _convert_to_int(line: str) -> int:
+        pattern = re.compile("^\s*[-+]?\s*\d+|[-+]{1}\s*\d+")
+
+        arg_list = [a.replace(' ', '') for a in re.findall(pattern, line)]
+
+        if not len(arg_list):
+            raise ValueError(f"Can't convert '{line}' to integer.")
+
+        sum = 0
+
+        for num in arg_list:
+            sum += int(num)
+
+        return sum
+
     def set(self, **kwargs):
 
-        row = int(kwargs["row"])
-        col = int(kwargs["col"])
+        row = self._convert_to_int(kwargs["row"])
+        col = self._convert_to_int(kwargs["col"])
         val = kwargs["val"]
         val = str(val).format(**kwargs)
 
