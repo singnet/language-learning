@@ -141,6 +141,9 @@ class TextFileDashboard(AbstractDashboardClient):
 
     def _update_table(self):
         """ Update current table from already existing file """
+        if not os.path.isfile(self._path):
+            return
+
         lock = ExclusiveLock(self._path)
 
         with open(self._path, "r") as file:
