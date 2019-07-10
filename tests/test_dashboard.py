@@ -177,7 +177,11 @@ class DashboardTestCase(unittest.TestCase):
 
         board = get_component("dash-board", multi["parameters"])
         board.set(row="1", col="2", val="0.9")
+        del board
+
+        board = get_component("dash-board", multi["parameters"])
         board.set(row="2", col="2", val="1.0")
+        del board
 
 
 if __name__ == '__main__':

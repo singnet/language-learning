@@ -149,9 +149,20 @@ class TextFileDashboard(AbstractDashboardClient):
         with open(self._path, "r") as file:
             table = file.readlines()
 
+        # Remove trailing empty lines if any
+        for item in table[::-1]:
+            if len(item.rstrip()) > 0:
+                break
+            else:
+                table.remove(item)
+
+        # Get number of table rows
+        row_count = len(table)
+
         # Check if table has the same dimentions
-        if len(table) != self._row_count:
-            raise DashboardError(f"Table read from the existing file '{self._path}' has different number of rows.")
+        if row_count != self._row_count:
+            raise DashboardError(f"Table read from the existing file '{self._path}' has different number of rows: "
+                                 f"{row_count} instead of {self._row_count}.")
 
         # Update table read from the file with the current table data
         for row in range(self._row_count):
