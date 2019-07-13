@@ -67,10 +67,20 @@ class PipelineTreeNode2:
 
     @staticmethod
     def log_error(message: str, node, exception_obj: Exception, traceback_str: str=""):
+        """
+        Log exception information
+
+        :param message:         Error message.
+        :param node:            Execution tree node the exception is rased at.
+        :param exception_obj:   Exception object.
+        :param traceback_str:   Traceback converted to string.
+        :return:                None.
+        """
         node.logger.critical(f"{node._component_name}(cfg={node.seq_no+1}, "
                              f"run={node._environment.get('RUN_COUNT', 0)}):\n"
-                             f"{node._get_exception_name(exception_obj)}: {message}\n"
-                             f"{traceback_str}\n"
+                             f"{node._get_exception_name(exception_obj)}: {message}\n")
+
+        node.logger.debug(   f"{traceback_str}\n"
                              f"Environment:\n{node._environment}\n"
                              f"Parameters:\n{node._parameters}")
 
