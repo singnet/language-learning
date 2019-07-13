@@ -18,6 +18,7 @@ CONF_ROW_COUNT = "row_count"
 CONF_COL_COUNT = "col_count"
 CONF_FILE_PATH = "file_path"
 CONF_COL_HEADERS = "col_headers"
+CONF_MULTI_ACCESS = "multi_access"
 
 
 class ExclusiveLockError(Exception):
@@ -58,7 +59,7 @@ class TextFileDashboard(AbstractDashboardClient):
         self._logger = logging.getLogger("TextFileDashboard")
         self.check_config(self)
 
-        self._multi_access = config.get("multi_access", False)
+        self._multi_access = config.get(CONF_MULTI_ACCESS, False)
 
         self._path = handle_path_string(config[CONF_FILE_PATH])
         self._row_count = config[CONF_ROW_COUNT] + len(config.get(CONF_COL_HEADERS, []))
