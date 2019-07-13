@@ -67,7 +67,7 @@ class PipelineTreeNode2:
 
     @staticmethod
     def log_error(message: str, node, exception_obj: Exception, traceback_str: str=""):
-        node._logger.critical(f"{node._component}(cfg={node._cfg_count+1}, run={node._run_count}):\n"
+        node.logger.critical(f"{node._component}(cfg={node._cfg_count+1}, run={node._run_count}):\n"
             f"{node._get_exception_name(exception_obj)}: {message}\n"
             f"{traceback_str}\n"
             f"Environment:\n{node._environment}\n"
