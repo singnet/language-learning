@@ -67,11 +67,12 @@ class PipelineTreeNode2:
 
     @staticmethod
     def log_error(message: str, node, exception_obj: Exception, traceback_str: str=""):
-        node.logger.critical(f"{node._component}(cfg={node._cfg_count+1}, run={node._run_count}):\n"
-            f"{node._get_exception_name(exception_obj)}: {message}\n"
-            f"{traceback_str}\n"
-            f"Environment:\n{node._environment}\n"
-            f"Parameters:\n{node._parameters}")
+        node.logger.critical(f"{node._component_name}(cfg={node.seq_no+1}, "
+                             f"run={node._environment.get('RUN_COUNT', 0)}):\n"
+                             f"{node._get_exception_name(exception_obj)}: {message}\n"
+                             f"{traceback_str}\n"
+                             f"Environment:\n{node._environment}\n"
+                             f"Parameters:\n{node._parameters}")
 
     @staticmethod
     def traverse(job: Callable, node=None) -> None:
