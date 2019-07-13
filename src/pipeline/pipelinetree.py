@@ -120,12 +120,12 @@ def get_component(name: str, params: dict) -> AbstractPipelineComponent:
 
         # Check the instance to be proper pipeline component
         if not isinstance(component, AbstractPipelineComponent):
-            raise Exception("Error: " + str(type(component)) + " is not an instance of AbstractPipelineComponent")
+            raise Exception(f"Error: {str(type(component))} is not an instance of AbstractPipelineComponent")
 
         return component
 
     except KeyError:
-        raise Exception("Error: '{}' is not a valid pipeline component name.".format(name))
+        raise Exception(f"Error: '{name}' is not a valid pipeline component name.")
 
 
 def single_proc_exec(node: PipelineTreeNode2) -> None:
