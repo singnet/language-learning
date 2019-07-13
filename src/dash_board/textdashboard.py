@@ -130,15 +130,6 @@ class TextFileDashboard(AbstractDashboardClient):
         """ Set cell value by row and column names. """
         self._dashboard[self._get_row_index(row_name)][self._get_col_index(col_name)] = value
 
-    def _fill_empty_cells(self) -> None:
-        """ Replace None with text string """
-        for row in range(0, self._row_count):
-            for col in range(0, self._col_count):
-                if self._dashboard[row][col] is None:
-                    self._dashboard[row][col] = "N/A"
-                else:
-                    self._dashboard[row][col] = str(self._dashboard[row][col])
-
     def _update_table(self):
         """ Update current table from already existing file """
         if not os.path.isfile(self._path):
@@ -185,21 +176,19 @@ class TextFileDashboard(AbstractDashboardClient):
             if self._multi_access:
                 self._update_table()
 
-            self._fill_empty_cells()
-
             with open(self._path, "w") as file:
-                print(self.get_text(), file=file)
+                print(str(self), file=file)
 
         except IOError as err:
             self._logger.error("IOError: " + str(err))
             raise
 
-    def get_text(self) -> str:
+    def __str__(self) -> str:
         """ Return dashboard as text string """
         text = ""
 
         for row in self._dashboard:
-            text += '\t'.join(row) + "\n"
+            text += '\t'.join(["N/A" if cell is None else str(cell) for cell in row]) + "\n"
 
         return text
 

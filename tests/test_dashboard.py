@@ -151,7 +151,7 @@ class DashboardTestCase(unittest.TestCase):
 
         board.update_dashboard()
 
-        self.assertEqual(should_be, board.get_text())
+        self.assertEqual(should_be, str(board))
 
     def test_component(self):
         board = get_component("dash-board", conf["parameters"])
