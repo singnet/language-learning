@@ -93,7 +93,7 @@ class PipelineTreeNode2:
         :param node:        Node to start from
         :return:            None
         """
-        if node is None:
+        if node is None or node._parameters.get("skip_configuration", False):
             return None
 
         if job is not None:
