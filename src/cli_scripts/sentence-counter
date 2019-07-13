@@ -95,6 +95,10 @@ Usage:
         logger.warning("Ctrl+C triggered. User abort.")
         return 4
 
+    except PermissionError as err:
+        logger.critical(str(err))
+        return 1
+
     except Exception as err:
         logger.critical(str(type(err)) + ": " + str(err))
         logger.debug(traceback.print_exc())

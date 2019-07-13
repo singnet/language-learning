@@ -117,6 +117,10 @@ Usage:
         logger.critical(str(err))
         return 1
 
+    except PermissionError as err:
+        logger.critical(str(err))
+        return 1
+
     except Exception as err:
         logger.critical(str(type(err)) + ": " + str(err))
         logger.debug(traceback.print_exc())

@@ -134,16 +134,20 @@ Usage:
     except TokenCountError as err:
         logger.critical(str(err))
         # logger.debug(traceback.print_exc())
-        return 2
+        return 1
 
     except KeyboardInterrupt:
         logger.warning("Ctrl+C triggered. User abort.")
-        return 3
+        return 1
+
+    except PermissionError as err:
+        logger.critical(str(err))
+        return 1
 
     except Exception as err:
         logger.critical(str(type(err)) + ": " + str(err))
         logger.debug(traceback.print_exc())
-        return 4
+        return 1
 
     return 0
 

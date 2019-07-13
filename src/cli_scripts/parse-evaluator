@@ -169,6 +169,10 @@ def main(argv):
         logger.critical(str(err))
         return 1
 
+    except PermissionError as err:
+        logger.critical(str(err))
+        return 1
+
     except ValueError as err:
         logger.critical(str(err))
         print(main.__doc__)
