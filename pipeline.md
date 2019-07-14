@@ -66,6 +66,7 @@ specified "dynamic" is used by default.
 |text-parser|dynamic| Text Parser component |
 |grammar-learner|dynamic| Grammar Learner component|
 |grammar-tester|dynamic| Grammar Tester component|
+|parse-evaluator|dynamic| Parse Evaluator component|
 |dash-board|static| Dash-board component|
 |path-creator|static| Path Creator component|
 
@@ -96,6 +97,9 @@ name of the object instance and requested method separated by period e.g.
 `"post-exec-req": [{"obj": "stat.set", "row": "1", "col": "2", "val": "{F1}"}]`. 
 
 
+You can skip any of the previously created configurations during pipeline execution by simply
+adding `"skip_configuration": true` parameter into configuration you want to skip.
+
 ### Configuration Options Available For `grammar-tester`
 
 
@@ -122,6 +126,11 @@ name of the object instance and requested method separated by period e.g.
 |separate_stat|boolean| Produce separate statistics file for each corpus file if set to `true`.|true/false|
 |store_dict_localy|boolean| Create dictionary subdirectory in the same subdirectory where output files are stored.|true/false|
 |no_left_wall_in_ull|boolean| Do not write `LEFT-WALL` links to `.ull` output file.|true/false|
+|existing_dict_dir|boolean| Treat a string specified by `input_grammar` as path to existing Link Grammar dictionary directory.|true/false|
+|exclude_timeouted|boolean| Exclude from statistics computation records with exceeded timeout.|true/false|
+|exclude_explosion|boolean| Exclude from statistics computation sentences causing combinatorial explosion during parsing.|true/false|
+|strict_tokenization|boolean| Force an exception if tokenization of test and reference sentences mismatch. Only warning is generated if not set or set to `False`.|true/false|
+|ignore_sentence_mismatch|boolean| Do not generate an exception if test and reference sentences mismatch.|true/false|
 
 
 ## Configuring File Dashboard
@@ -185,6 +194,7 @@ and graph nodes responsible for row/column positioning inside the dashboard.
 4. Define row/column key string/numeric row/column index relations.
 5. Define headers structure.
 
+
 ### Key Format Parameters
 `row_key`, `col_key` are Python format strings needed to make up strings 
 used as dictionary keys to find corresponding row and column numbers.
@@ -219,3 +229,11 @@ column is a dictionary. While each column header definition may consist of
 multiple named entries, only `title` is mandatory and should be assigned a 
 text string. HTMLFileDashboard class instances may handle `col_span` and 
 `row_span` attributes. 
+
+### Multiple Pipeline File Access
+In the latest version multiple processes file access made available. Now you can configure two `.json` configuration 
+files to populate the same dash board file table. You have to create each `.json`
+with exactly the same dashboard definition including file name and dimentions. You have to add `"multi_access": true` 
+to allow multiple processe to write the same text file. If you do that the process checks if the file is already exists 
+and if it does it locks it for exclusive use, read it, update read table with its own latest results, saves it and 
+unlocks the file. 
