@@ -1,8 +1,9 @@
 import re
 import os
+import sys
 import time
 import logging
-from typing import Optional
+from typing import Optional, Union
 from ..common.absclient import AbstractDashboardClient, DashboardError, AbstractPipelineComponent
 from ..common.cliutils import handle_path_string
 
@@ -233,7 +234,11 @@ class TextFileDashboardComponent(AbstractPipelineComponent):
         self._board.update_dashboard()
 
     @staticmethod
-    def _convert_to_int(line: str) -> int:
+    def _convert_to_int(line: Union[str, int]) -> int:
+        # Do nothing if specified parameter is already int
+        if isinstance(line, int):
+            return line
+
         pattern = re.compile("^\s*[-+]?\s*\d+|[-+]{1}\s*\d+")
 
         arg_list = [a.replace(' ', '') for a in re.findall(pattern, line)]
@@ -249,13 +254,11 @@ class TextFileDashboardComponent(AbstractPipelineComponent):
         return sum
 
     def set(self, **kwargs):
+        # logging.debug(f"{kwargs}")
 
-        row = self._convert_to_int(kwargs["row"])
-        col = self._convert_to_int(kwargs["col"])
-        val = kwargs["val"]
-        val = str(val).format(**kwargs)
-
-        self._board.set_cell_by_indexes(row, col, val)
+        self._board.set_cell_by_indexes(self._convert_to_int(kwargs["row"]),
+                                        self._convert_to_int(kwargs["col"]),
+                                        str(kwargs["val"]).format(**kwargs))
 
     def validate_parameters(self, **kwargs) -> bool:
         return True
