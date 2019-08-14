@@ -4,8 +4,11 @@ import shutil
 import datetime
 import unittest
 from subprocess import PIPE, Popen
-from typing import Union, Tuple, List, Optional
+# from __future__ import __annotations__
+from typing import Union, Tuple, List, Optional, Type
 from src.common.dirhelper import traverse_dir_tree
+# from src.common.absclient import AbstractFileParserClient
+
 
 # Root path where all LG dictionary subdirectories are located
 DICT_REL_PATH = "tests/test-data/dict"

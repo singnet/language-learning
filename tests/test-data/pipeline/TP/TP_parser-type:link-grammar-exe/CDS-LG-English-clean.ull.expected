@@ -3404,6 +3404,7 @@ he 's not going
 1 he 2 's
 2 's 3 not
 2 's 4 going
+3 not 4 going
 
 that 's a balloon
 0 ###LEFT-WALL### 1 that
@@ -4045,6 +4046,7 @@ no he 's not sleeping
 2 he 3 's
 3 's 4 not
 3 's 5 sleeping
+4 not 5 sleeping
 
 there he is
 0 ###LEFT-WALL### 1 there
@@ -4887,7 +4889,7 @@ is this cat sleeping
 see his eyes are closed
 0 ###LEFT-WALL### 1 see
 1 see 3 eyes
-1 see 5 closed
+1 see 4 are
 2 his 3 eyes
 3 eyes 4 are
 4 are 5 closed
@@ -4901,7 +4903,7 @@ he 's sleeping
 is that dog sleeping
 0 ###LEFT-WALL### 1 is
 1 is 2 that
-1 is 3 dog
+1 is 4 sleeping
 3 dog 4 sleeping
 
 it 's another one
@@ -5344,11 +5346,12 @@ it 's not sleeping
 1 it 2 's
 2 's 3 not
 2 's 4 sleeping
+3 not 4 sleeping
 
 is that rabbit sleeping
 0 ###LEFT-WALL### 1 is
 1 is 2 that
-1 is 3 rabbit
+1 is 4 sleeping
 3 rabbit 4 sleeping
 
 what is it
@@ -7313,9 +7316,8 @@ it 's not a toy
 
 what would you like to give him
 0 ###LEFT-WALL### 1 what
-0 ###LEFT-WALL### 4 like
 1 what 2 would
-1 what 4 like
+1 what 6 give
 2 would 3 you
 2 would 4 like
 4 like 5 to
@@ -7849,10 +7851,10 @@ what are these things
 3 these 4 things
 
 with honey like you like them
-0 ###LEFT-WALL### 5 like
+0 ###LEFT-WALL### 1 with
 1 with 2 honey
-1 with 5 like
 2 honey 3 like
+2 honey 5 like
 3 like 4 you
 5 like 6 them
 
@@ -8983,9 +8985,9 @@ you want your baby back
 0 ###LEFT-WALL### 1 you
 0 ###LEFT-WALL### 2 want
 1 you 2 want
-2 want 4 baby
 2 want 5 back
-3 your 4 baby
+3 your 5 back
+4 baby 5 back
 
 will let me out
 0 ###LEFT-WALL### 1 will
@@ -9139,9 +9141,8 @@ what is it
 
 what would you like to call it
 0 ###LEFT-WALL### 1 what
-0 ###LEFT-WALL### 4 like
 1 what 2 would
-1 what 4 like
+1 what 6 call
 2 would 3 you
 2 would 4 like
 4 like 5 to
@@ -9151,12 +9152,11 @@ what would you like to call it
 
 what kind of doggie would you like to call this one
 0 ###LEFT-WALL### 1 what
-0 ###LEFT-WALL### 7 like
 1 what 3 of
 2 kind 3 of
 3 of 4 doggie
 3 of 5 would
-3 of 7 like
+3 of 9 call
 5 would 6 you
 5 would 7 like
 7 like 8 to
@@ -11578,10 +11578,10 @@ what is it
 2 is 3 it
 
 you wanna read a book
+0 ###LEFT-WALL### 1 you
 0 ###LEFT-WALL### 2 wanna
 0 ###LEFT-WALL### 3 read
 1 you 2 wanna
-2 wanna 3 read
 3 read 5 book
 4 a 5 book
 
@@ -19754,14 +19754,13 @@ is that an apple
 
 what does she have in her hand
 0 ###LEFT-WALL### 1 what
-0 ###LEFT-WALL### 7 hand
 1 what 2 does
 1 what 4 have
 2 does 3 she
 2 does 4 have
 4 have 5 in
-4 have 7 hand
-5 in 6 her
+5 in 7 hand
+6 her 7 hand
 
 what 's that called
 0 ###LEFT-WALL### 1 what

@@ -1,21 +1,18 @@
 package:
-  name: sparsesvd
-  version: "0.2.2"
+  name: link-grammar-minisat-bundled
+  version: "5.6.2"
 
 source:
-  url: https://pypi.python.org/packages/source/s/sparsesvd/sparsesvd-0.2.2.tar.gz
+  url: https://www.abisource.com/downloads/link-grammar/5.6.2/link-grammar-5.6.2.tar.gz
 
 build:
-  number: 4
-  string: py37_4
+  number: 3
+  string: py37_3
 
 requirements:
   host:
     - python==3.7
-    - setuptools
-    - numpy
-    - scipy
-    - cython
+
   build:
 #    - make
 #    - m4
@@ -35,5 +32,5 @@ requirements:
 #    -  postgresql >=9.1
 
 about:
-  home: https://pypi.org/project/sparsesvd/
-  license: BSD
+  home: https://www.abisource.com/projects/link-grammar/
+  license: GPL2

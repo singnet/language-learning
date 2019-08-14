@@ -1,7 +1,3 @@
-import os
-import sys
-import shutil
-
 import unittest
 from .pipeline_integration import ScriptIntegrationTestCase
 

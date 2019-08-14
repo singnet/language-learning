@@ -10,9 +10,6 @@ jobs:
       ORG: singnet
     steps:
       - checkout
-#      - run:
-#          name: Activate virtual environment
-#          command: source activate ull
       - run:
           name: Run tests
           command: |
