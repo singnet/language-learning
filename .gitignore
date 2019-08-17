@@ -48,6 +48,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+/tests/test-data/pre-cleaner/cleaned-books/*
 
 # Translations
 *.mo
@@ -120,3 +121,4 @@ ENV/
 .ftpconfig
 .ftpignore
 /trash
+*.swp

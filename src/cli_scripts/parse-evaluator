@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 # ASuMa, Mar 2018
-# Read parse data in MST-parser format, from reference and test files
-# and evaluate the accuracy of the test parses.
+# Evaluate parses against reference parses, both in ULL format.
 # See main() documentation below for usage details
 
 import platform
@@ -21,11 +20,15 @@ from ull.parse_evaluator import Evaluate_Alternative
 
 def main(argv):
     """
-        Evaluates parses compared to given gold standard (GS).
-        For each parse, loops through all links in GS and checks if those
-        2 word-instances are also connected in parse to evaluate.
+        Evaluates test parses against given reference parses.
+        Alternatively, can generate its own sequential or random parses
+        to evaluate against reference parses.
+        For each sentence-parse, loops through all links in reference and 
+        checks if those 2 word-instances are also connected in test parse.
 
         Parses must be in format:
+
+        -----------------------------------------------------------------------
         Sentence to evaluate
         # word1 # word2
         # word2 # word3
@@ -35,17 +38,19 @@ def main(argv):
         # word1 # word2
         ...
 
-        Usage: parse_evaluator -r <reffile> -t <testfile> [-v] [-i] [-s] [-z] [-a] [-o]
+        -----------------------------------------------------------------------
+        Usage: parse_evaluator -r <reffile> -t <testfile> [-v] [-w] [-i] [-c] [-a] [-s] [-z] [-f] [-o] [-O] [-T] [-S]
 
-        testfile        file with parses to evaluate
-        reffile         file with reference (gold standard) parses
+        testfile        file with parses to evaluate, or to store sequential/random parses
+        reffile         file with reference parses
         -v              Verbosity level options: [none, debug, info, warning, error, critical]
-        -z              File logging level options: [none, debug, info, warning, error, critical]
+        -w              File logging level options: [none, debug, info, warning, error, critical]
         -i              ignore LEFT-WALL and end-of-sentence dot, if any
+        -c              ignore function words in evaluation (only take content-words, only in alternative evaluator)
         -a              use alternative parse_evaluator
-        -s              evaluate sequential parses (only in alternative evaluator)
-        -z              evaluate random parses (only in alternative evaluator)
-        -f              filter sentences not matching in ref and test, or have internal dialogue (only in alternative)
+        -s              generate sequential parses in <testfile> and evaluate 
+        -z              generate random parses in <testfile> and evaluate 
+        -f              filter sentences not matching in ref and test, or have internal dialogue
         -o              compare tokenization between two given parse files. Output file with diffs.
         -O              output directory path
         -T              strict tokenization
@@ -58,6 +63,7 @@ def main(argv):
     verbosity_level = logging.WARNING
     logging_level   = logging.NOTSET
     ignore_wall = False
+    content = False
     sequential = False
     random = False
     alternative_parser = False
@@ -69,9 +75,9 @@ def main(argv):
     try:
         app_name = str(os.path.split(__file__)[1]).split(".")[0]
 
-        opts, args = getopt.getopt(argv, "ht:r:O:v:iszafoTSw:", ["test=", "reference=", "output=", "verbosity=", "ignore",
-                                                             "sequential", "random", "alternative", "filter",
-                                                             "tokenization", "strict-tokenization",
+        opts, args = getopt.getopt(argv, "ht:r:O:v:iszcafoTSw:", ["test=", "reference=", "output=", "verbosity=", "ignore",
+                                                             "sequential", "random", "content", "alternative", 
+                                                             "filter", "tokenization", "strict-tokenization",
                                                              "ignore-sent-mismatch", "logging"])
 
         for opt, arg in opts:
@@ -102,14 +108,16 @@ def main(argv):
             elif opt in ("-i", "--ignore"):
                 ignore_wall = True
                 options |= (BIT_NO_LWALL | BIT_NO_PERIOD)
+            elif opt in ("-c", "--content"):
+                content = True
             elif opt in ("-s", "--sequential"):
                 if random:
-                    raise getopt.GetoptError("Either '--random' or '--sequential' or none should be specified.")
+                    raise getopt.GetoptError("'--random' and '--sequential' cannot be run together.")
                 sequential = True
                 parser_type = "sequential"
             elif opt in ("-z", "--random"):
                 if sequential:
-                    raise getopt.GetoptError("Either '--random' or '--sequential' or none should be specified.")
+                    raise getopt.GetoptError("'--random' and '--sequential' cannot be run together.")
                 random = True
                 parser_type = "random"
             elif opt in ("-a", "--alternative"):
@@ -160,10 +168,12 @@ def main(argv):
 
         if alternative_parser:
             Evaluate_Alternative(ref_file, test_file, verbose, ignore_wall, sequential, random, filter_sentences,
-                                 compare_tokenization, **params)
+                                 compare_tokenization, content, **params)
 
         else:
             compare_ull_files(test_file, ref_file, options, **params)
+            print(f"Evaluation complete. Results available in *.stat file(s)")
+
 
     except FileNotFoundError as err:
         logger.critical(str(err))

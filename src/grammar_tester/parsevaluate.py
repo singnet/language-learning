@@ -207,7 +207,7 @@ def make_random(sentences: Union[List[Tuple[str, set]],List[str]], options: int,
 
 def tokenize_sentence(sentence: str) -> List[str]:
     """
-    Split sentence into tokens by spaces removing square brackets surrounding tokens if any.
+    Split sentence into tokens by spaces.
 
     :param sentence:        Sentence string.
     :return:                List of tokens.

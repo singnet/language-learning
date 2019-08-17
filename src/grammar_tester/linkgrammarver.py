@@ -118,8 +118,15 @@ def get_lg_dict_version(dict_path: str) -> str:
     """
     re_dict_rule = re.compile(r'^([^%\n][<]?UNKNOWN-WORD[>]?\s*:.+?;\s*)$', re.M | re.S)
 
+    dict_path2 = dict_path
+
     if os.path.isdir(dict_path):
+        dict_path2 += "/dict.db"
         dict_path += "/4.0.dict"
+
+    if os.path.isfile(dict_path2):
+        # In case dict is a binary file, returns special "version"
+        return "sql-dict"
 
     with open(dict_path, "r") as file:
         text = file.read()

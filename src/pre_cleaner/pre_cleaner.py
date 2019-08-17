@@ -8,81 +8,68 @@ import sys, getopt, os
 import re
 from html.parser import HTMLParser
 
+__all__ = ['Execute_Precleaner', 'Ignore_Long_Sentence', 'Remove_Long_Tokens',
+			'Normalize_Sentence', 'Clean_Sentence', 'Char_Tokenizer', 'Remove_Invalid_Tokens',
+			'Ignore_Invalid_Sentence', 'Substitute_Numbers', 'Substitute_Dates',
+			'Substitute_Times', 'Substitute_Links', 'Substitute_Percent',
+			'Prepare_Suffix_List', 'Remove_Suffixes']
+
 def main(argv):
 	"""
 		Pre_cleaner takes two mandatory arguments and several optional ones:
 
 		"Usage: pre_cleaner.py -i <inputdir> -o <outputdir> [-c <chars_invalid>] [-b <bounday_chars>] 
 		[-a <tokenized_chars>][-s <suffixes>] [-l <sentence_length>] [-t <token_length>] 
-		[-x <sentence_symbols>] [-y <sentence_tokens>] [-z <token_symbols>] [-U] [-q] [-n] [-d] [-T] [-H] [-e]"
+		[-x <sentence_symbols>] [-y <sentence_tokens>] [-z <token_symbols>] [-U] [-j] [-p] [-n] [-d] [-T] [-H] [-e] [-S]"
 
 		inputdir 			Directory with files to be processed.
 							Can contain subdirectories.
 		outputdir			Directory to output processed files
 		[
-		chars_invalid		Characters to delete from text (default = none). They need to be given as a
+		chars_invalid		Characters to delete from text (default: none). They need to be given as a
 							string without spaces between the characters, e.g. "$%^&" would eliminate
 							only those 4 characters from appearances in the text.
 		boundary_chars		Characters tokenized if token boundaries, only inside.
-							Default: apostrophe, double quote.
-		tokenized_chars		Characters tokenized everywhere.
+							Given as chars separated by space, e.g. "\" ' \."
+							Default: apostrophe, double quote, dot
+		tokenized_chars		Characters tokenized everywhere. Given as a string without spaces between 
+							characters, e.g. "$%^&"
 							Default: brackets, parenthesis, braces, comma, colon, semicolon, slash,
 							currency signs, #, &, +, -
-		suffixes 			Suffixes to eliminate in text (default = none). They need to come in a string
+		suffixes 			Suffixes to eliminate in text (default: none). They need to come in a string
 							separated by spaces.
 							For example, -s "'s 'd n't" would eliminate all suffixes 's, 'd, n't
-							Of course, as suffixes, they need to come at the end of a word to be eliminated
-		sentence_length		Maximum sentence length accepted (default = 16. Sentences with more are deleted)
-		token_length 		Maximum token lenght accepted (default = 25. Tokens with more are deleted)
-		sentences_symbols	Symbols invalidating sentences (default = none). They need to be given as a
-							string without spaces between the characters, e.g. "$%^&" would eliminate
+							As suffixes, they need to come at the end of a word to be eliminated
+		sentence_length		Maximum sentence length accepted (default: 25). Sentences with more are deleted
+		token_length 		Maximum token lenght accepted (default: 25). Tokens with more are deleted
+		sentence_symbols	Symbols invalidating sentences (default: none). 
+							Given as chars separated by space, e.g. "$ % ^ &" would eliminate
 							all sentences that have those 4 characters.
-		sentence_tokens 	Tokens invalidating sentences (default = none). They need to be given as a 
+		sentence_tokens 	Tokens invalidating sentences (default: none). They need to be given as a 
 							string separated by spaces, e.g. "three invalid tokens" would eliminate all
 							sentences including either "three", "invalid" or "tokens"
-		token_symbols 		Symbols invalidating tokens (default = none). They need to be given as a
-							string without spaces between the characters, e.g. "$%^&" would eliminate
-							all tokens that have those 4 characters.
-		-U 					Keep uppercase letters (default is to convert to lowercase)
-		-q 					Pad quotes with spaces (default is to keep them as is)
-		-j 					Separate contractions (default is to keep them together)
-		-n 					Keep numbers (default converts them to @number@ token)
-		-d 					Keep dates (default converts them to @date@ token)
-		-T 					Keep times (default converts them to @time@ token)
-		-H 					Keep hyperlinks/emails (default converts them to @url@/@email@ token)
-		-e 					Keep escaped HTML and UniCode symbols (default decodes them)
+		token_symbols 		Symbols invalidating tokens (default: none).
+							Given as chars separated by space, e.g. "$ % ^ &" would eliminate
+							all sentences that have those 4 characters.
+		-U 					Keep uppercase letters (default: convert to lowercase)
+		-j 					Separate contractions (default: keep them together)
+		-p 					Keep percentages (default: converts them to @percent@ token)
+		-n 					Keep numbers (default: converts them to @number@ token)
+		-d 					Keep dates (default: converts them to @date@ token)
+		-T 					Keep times (default: converts them to @time@ token)
+		-H 					Keep hyperlinks/emails (default: converts them to @url@/@email@ token)
+		-e 					Keep escaped HTML and UniCode symbols (default: decodes them)
 		-S 					Don't add sentence splitter mark to be recognized by
 							split_sentences.pl, even if text is lowercased (they're added by default)
 		]
 	"""
-	inputdir = ''
-	outputdir = ''
-	invalid_chars = u""
-	boundary_chars = u'\'"'
-	tokenized_chars = u"[](){}<>,:;/\$#&+=?!¡¿"
-	new_suffix_list = []
-	max_tokens = 25
-	max_chars = 25
-	sentence_invalid_symbols = []
-	sentence_invalid_tokens = []
-	token_invalid_symbols = []
-	convert_lowercase = True
-	dont_pad_quotes = True
-	separate_contractions = False
-	convert_percent_to_tokens = True
-	convert_numbers_to_tokens = True
-	convert_dates_to_tokens = True
-	convert_times_to_tokens = True
-	convert_links_to_tokens = True
-	decode_escaped = True
-	add_splitters = True
-	filename_suffix = ''
+	kwargs = {}
 	try:
-		opts, args = getopt.getopt(argv,"hi:o:c:b:a:s:l:t:x:y:z:UqjpndTHeS",["idir=",
+		opts, args = getopt.getopt(argv,"hi:o:c:b:a:s:l:t:x:y:z:UjpndTHeS",["idir=",
 			"odir=", "chars_invalid=", "boundary_chars=","tokenized_chars=", 
 			"suffixes=", "sen_length=", 
 			"token_length=", "sentence_symbols=", "sentence_tokens=", 
-			"token_symbols=" "Uppercase", "quotes", "contractions", "percent",
+			"token_symbols=" "Uppercase", "contractions", "percent",
 			"numbers", "dates", 
 			"Times", "Hyperlinks", "escaped", "Splits"])
 	except getopt.GetoptError:
@@ -90,7 +77,7 @@ def main(argv):
 		    [-c <chars_invalid>] [-b <boundary_chars>] [-a <tokenized_chars>] 
 		    [-s <suffixes>] [-l <sentence_length] 
 		    [-t <token_length>] [-x <sentence_symbols>] [-y <sentence_tokens>]
-		    [-z <token_symbols>] [-U] [-q] [-j] [-p] [-n] [-d] [-T] [-H] [-e] [-S]''')
+		    [-z <token_symbols>] [-U] [-j] [-p] [-n] [-d] [-T] [-H] [-e] [-S]''')
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
@@ -98,81 +85,71 @@ def main(argv):
 			    [-c <chars_invalid>] [-b <boundary_chars>] [-a <tokenized_chars>] 
 			    [-s <suffixes>] [-l <sentence_length] 
 			    [-t <token_length>] [-x <sentence_symbols>] [-y <sentence_tokens>]
-			    [-z <token_symbols>] [-U] [-q] [-j] [-p] [-n] [-d] [-T] [-H] [-e] [-S]''')
+			    [-z <token_symbols>] [-U] [-j] [-p] [-n] [-d] [-T] [-H] [-e] [-S]''')
 			sys.exit()
 		elif opt in ("-i", "--idir"):
 			inputdir = arg
 		elif opt in ("-o", "--odir"):
 			outputdir = arg
 		elif opt in ("-c", "--chars_invalid"):
-			invalid_chars = arg
-			filename_suffix += 'c'
+			kwargs['invalid_chars'] = arg
 		elif opt in ("-b", "--boundary_chars"):
-			boundary_chars = arg
-			filename_suffix += 'b'
+			kwargs['boundary_chars'] = arg
 		elif opt in ("-a", "--tokenized_chars"):
-			tokenized_chars = arg
-			filename_suffix += 'a'
+			kwargs['tokenized_chars'] = arg
 		elif opt in ("-s", "--suffixes"):
-			suffix_list = arg.split()
-			new_suffix_list = Prepare_Suffix_List(suffix_list)
-			filename_suffix += 's'
+			kwargs['suffix_list'] = arg
 		elif opt in ("-l", "--sen_length"):
-			max_tokens = int(arg)
-			filename_suffix += 'l'
+			kwargs['max_tokens'] = int(arg)
 		elif opt in ("-t", "--token_length"):
-			max_chars = int(arg)
-			filename_suffix += 't'
+			kwargs['token_length'] = int(arg)
 		elif opt in ("-x", "--sentence_symbols"):
-			sentence_invalid_symbols = arg
-			filename_suffix += 'x'
+			kwargs['sentence_invalid_symbols'] = arg
 		elif opt in ("-y", "--sentence_tokens"):
-			sentence_invalid_tokens = arg
-			filename_suffix += 'y'
+			kwargs['sentence_invalid_tokens'] = arg
 		elif opt in ("-z", "--token_symbols"):
-			token_invalid_symbols = arg
-			filename_suffix += 'z'
+			kwargs['token_invalid_symbols'] = arg
 		elif opt in ("-U", "--Uppercase"):
-			convert_lowercase = False
-			filename_suffix += 'U'
-		elif opt in ("-q", "--quotes"):
-			dont_pad_quotes = False
-			filename_suffix += 'q'
+			kwargs['convert_lowercase'] = False
 		elif opt in ("-j", "--contractions"):
-			separate_contractions = True
-			filename_suffix += 'j'
+			kwargs['separate_contractions'] = True
 		elif opt in ("-p", "--percent"):
-			convert_percent_to_tokens = False
-			filename_suffix += 'p'
+			kwargs['convert_percent_to_tokens'] = False
 		elif opt in ("-n", "--numbers"):
-			convert_numbers_to_tokens = False
-			filename_suffix += 'n'
+			kwargs['convert_numbers_to_tokens'] = False
 		elif opt in ("-d", "--dates"):
-			convert_dates_to_tokens = False
-			filename_suffix += 'd'
+			kwargs['convert_dates_to_tokens'] = False
 		elif opt in ("-T", "--Times"):
-			convert_times_to_tokens = False
-			filename_suffix += 'T'
+			kwargs['convert_times_to_tokens'] = False
 		elif opt in ("-H", "--Hyperlinks"):
-			convert_links_to_tokens = False
-			filename_suffix += 'H'
+			kwargs['convert_links_to_tokens'] = False
 		elif opt in ("-e", "--escaped"):
-			decode_escaped = False
-			filename_suffix += 'e'
+			kwargs['decode_escaped'] = False
 		elif opt in ("-S", "--Splits"):
-			add_splitters = False
-			filename_suffix += 'S'
+			kwargs['add_splitters'] = False
 
-	translate_table = dict((ord(char), None) for char in invalid_chars)
+	Execute_Precleaner(inputdir, outputdir, **kwargs)
 
-	os.chdir(inputdir)
-	for inputfile in os.listdir("."):
-		print("Processing: ", os.path.basename(inputfile))
-		sentences = Load_Files(inputfile)
+def Execute_Precleaner(inputdir: str, outputdir: str, invalid_chars: str = "",
+						boundary_chars: str = u'\' " \.', tokenized_chars: str = u"[](){}<>,:;/\$#&+=?!¡¿",
+						suffix_list: str = "", max_tokens: int = 25, max_chars: int = 25, 
+						sentence_invalid_symbols: str = "",	sentence_invalid_tokens: list = [],
+						token_invalid_symbols: str = "", convert_lowercase: bool = True,
+						separate_contractions: bool = False, convert_percent_to_tokens: bool = True,
+						convert_numbers_to_tokens: bool = True, convert_dates_to_tokens: bool = True,
+						convert_times_to_tokens: bool = True, convert_links_to_tokens: bool = True,
+						decode_escaped: bool = True, add_splitters: bool = True):
+	'''
+	Pre-cleaner pipeline, calling the different transformation modules in the appropriate
+	order to achieve desired cleanup
+	'''
+	for inputfile in os.listdir(inputdir):
+		print("Processing: {}/{}".format(inputdir, inputfile))
+		sentences = Load_Files(inputdir + "/" + inputfile)
 
-		if filename_suffix == '':
-			filename_suffix = 'default'
-		outputfile = "../" + outputdir + "/" + inputfile + '_' + filename_suffix
+		outputfile = outputdir + "/" + inputfile
+		if not os.path.exists(outputdir):
+		    os.makedirs(outputdir)
 
 		fo = open(outputfile, "w")
 		for sentence in sentences:
@@ -182,8 +159,6 @@ def main(argv):
 			if decode_escaped == True:
 				temp_sentence = Decode_Escaped(temp_sentence)
 			temp_sentence = Normalize_Sentence(temp_sentence, separate_contractions)
-			if dont_pad_quotes == False:
-				temp_sentence = Pad_quotes(temp_sentence)
 			if convert_dates_to_tokens == True:
 				temp_sentence = Substitute_Dates(temp_sentence)
 			if convert_times_to_tokens == True:
@@ -192,9 +167,10 @@ def main(argv):
 				temp_sentence = Substitute_Percent(temp_sentence)
 			if convert_numbers_to_tokens == True:
 				temp_sentence = Substitute_Numbers(temp_sentence)
-			temp_sentence = Clean_Sentence(temp_sentence, translate_table, new_suffix_list)
-			tokenized_sentence = Char_Tokenizer(temp_sentence, boundary_chars, tokenized_chars)
-			tokenized_sentence = Naive_Tokenizer(tokenized_sentence)
+			new_suffix_list = Prepare_Suffix_List(suffix_list)
+			temp_sentence = Clean_Sentence(temp_sentence, invalid_chars, new_suffix_list)
+			temp_sentence = Char_Tokenizer(temp_sentence, boundary_chars, tokenized_chars)
+			tokenized_sentence = Naive_Tokenizer(temp_sentence)
 			if Ignore_Long_Sentence(tokenized_sentence, max_tokens) == True:
 				continue
 			tokenized_sentence = Remove_Long_Tokens(tokenized_sentence, max_chars)
@@ -229,7 +205,8 @@ def Write_Output_Sentence(fo, sentence):
 	"""
 		writes sentence to the output file
 	"""
-	fo.write(sentence)
+	if not re.search(r"^\s*$", sentence):
+		fo.write(sentence)
 
 def Decode_Escaped(sentence):
 	"""
@@ -245,24 +222,18 @@ def Decode_Escaped(sentence):
 
 	return decode_sentence
 
-def Remove_Caps(sentence):
-    """
-        Converts all capital letters in "data" into small caps
-    """
-    return sentence.lower()
-
 def Char_Tokenizer(sentence, boundary_chars, tokenized_chars):
 	"""
-		Separates chars either from the boundary of a word or 
-		from any part of the string
+		Separates boundary_chars from the boundary of a word 
+		and tokenized_chars from any part of the string
 	"""
 	tok_sentence = sentence
-	# separates boundary chars from word when they're found at word boundary
-	for curr_char in boundary_chars:
-		tok_sentence = re.sub(r"(?:(\s|^))("+curr_char+"+)", r" \2 ", tok_sentence);
-		tok_sentence = re.sub(r"("+curr_char+"+)(?:(\s|$))", r" \1 ", tok_sentence);
+	# separates boundary_chars when they're found at word boundary
+	for curr_char in boundary_chars.split():
+		tok_sentence = re.sub(r"(\W|^)(" + curr_char + r"+)(\w)", r"\1 \2 \3", tok_sentence)
+		tok_sentence = re.sub(r"(\w)(" + curr_char + r"+)(\W|$)", r"\1 \2 \3", tok_sentence)
 
-	# tokenizes all tokenized_chars
+	# separates all tokenized_chars
 	trans_table = dict((ord(char), " " + char + " ") for char in tokenized_chars)
 	tok_sentence = tok_sentence.translate(trans_table)
 
@@ -303,7 +274,7 @@ def Remove_Invalid_Tokens(tokenized_sentence, invalidating_symbols):
 	"""
 	valid_tokens_sentence = [] + tokenized_sentence # forcing a copy, avoid pass by reference
 	for token in tokenized_sentence:
-		for invalid_symbol in invalidating_symbols:
+		for invalid_symbol in invalidating_symbols.split():
 			if invalid_symbol in token:
 				valid_tokens_sentence.remove(token)
 
@@ -323,16 +294,19 @@ def Ignore_Invalid_Sentence(tokenized_sentence, invalidating_symbols, invalidati
 
 	return False
 
-def Clean_Sentence(sentence, translate_table, new_suffix_list):
+def Clean_Sentence(sentence, invalid_chars, new_suffix_list):
 	"""
 		Cleans sentence from invalid chars
 	"""
 	# remove unaccepted characters
+	translate_table = dict((ord(char), None) for char in invalid_chars)
 	temp_sentence = sentence.translate(translate_table)
 	# remove asterisk, so they are token-splitters
 	temp_sentence = re.sub(r"\*", " ", temp_sentence)
 	# remove long-dashes completely, so they are token-splitters
 	temp_sentence = re.sub(r"—", " ", temp_sentence)
+	# remove underscores completely, so they are token-splitters
+	temp_sentence = re.sub(r"_", " ", temp_sentence)
 	temp_sentence = Remove_Suffixes(temp_sentence, new_suffix_list)
 
 	return temp_sentence
@@ -342,30 +316,22 @@ def Normalize_Sentence(sentence, separate_contractions):
 		Converts all different apostrophes, double quotes and dashes to 
 		standard symbols.
 		Also removes underscores (commonly used as underline markup).
-		Also converts asterisks to space
 		Also separates contractions if separete_contractions
 	"""
 
-		# Normalize apostrophes, dashes and quotes obtained from Wikipedia 
+	# Normalize apostrophes, dashes and quotes obtained from Wikipedia 
 	# Apostrophe page
 	sentence = re.sub(r"`|’|‘", "'", sentence)
-	sentence = re.sub(r"‑|‐", "-", sentence)
 	# some dashes look the same, but they are different
+	sentence = re.sub(r"‑|‐", "-", sentence)
 	sentence = re.sub(r"-{2,}|―|—|–|‒", "—", sentence) 
 	sentence = re.sub(r"''|“|”", '"', sentence)
 	# remove underscores completely, so they are token-splitters
-	sentence = re.sub(r"_", " ", sentence)
+	# sentence = re.sub(r"_", " ", sentence)
 	if separate_contractions == True:
 		# separate contractions (e.g. They're -> They 're)
-		sentence = re.sub(r"(?<=[a-zA-Z])'(?=[a-zA-Z])", " '", sentence)
+		sentence = re.sub(r"(?<=[a-zA-Z])(n'|')(?=[a-zA-Z])", r" \1", sentence)
 	return sentence
-
-def Pad_quotes(sentence):
-	# sentence splitter escapes double quotes, as needed by guile
-	sentence = re.sub(r'"', ' " ', sentence)
-	sentence = re.sub(r"'", " ' ", sentence)
-	return sentence
-
 
 def Substitute_Links(sentence):
 	"""
@@ -435,9 +401,8 @@ def Substitute_Percent(sentence):
 	"""
 		Substitutes percents with special token
 	"""
-	# handles any number as in Substitute_Numbers, ending with % sign
 	sentence = re.sub(r'''(?<![^\s"'[(])[+-]?[.,;]?(\d+[.,;']?)+%(?![^\s.,;!?'")\]])''', 
-		               '@percent@', sentence)
+' @percent@ ', sentence)
 	return sentence
 
 
@@ -446,8 +411,8 @@ def Substitute_Numbers(sentence):
 		Substitutes numbers with special token
 	"""
 	# handles trailing/leading decimal mark
-	sentence = re.sub(r'''(?<![^\s"'[(])[+-]?[.,;]?(\d+[.,;']?)+(?![^\s.,;!?'")\]])''',
-	 			       '@number@', sentence)
+	sentence = re.sub(r'''(?<![^\s"'[(])[#+-]?[.,;]?(\d+[.,;']?)*(\d+[.,;]?)(?![^\s!?'")\]])''',
+	 			       ' @number@ ' , sentence)
 	return sentence
 
 def Prepare_Suffix_List(suffix_list):
@@ -455,7 +420,7 @@ def Prepare_Suffix_List(suffix_list):
 		Adds regular expression parts to given suffixes
 	"""
 	new_suffix_list = []
-	for suffix in suffix_list:
+	for suffix in suffix_list.split():
 		regex_suffix = r"(?<=\w)" + suffix + r"(?=\s)"
 		new_suffix_list = new_suffix_list + [regex_suffix]
 	return new_suffix_list

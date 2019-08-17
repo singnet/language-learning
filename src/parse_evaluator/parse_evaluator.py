@@ -72,14 +72,21 @@ def Get_Parses(data):
 
     return parses, sentences
 
-def MakeSets(parse, sent_len, ignore_WALL):
+def MakeSets(parse, sent_len, ignore_WALL, content_words):
     """
         Gets a list with links and its sentence's length and returns a
         set of sets for each link's ids, ignoring WALL and dot if requested
     """
     current_ignored = 0
     link_list = []
+    if content_words:
+        with open("/home/andres/MyOpenCogSources/language-learning/src/parse_evaluator/func_words.txt", 'r') as ff:
+            func_words = ff.readlines()[0].split()
     for link in parse:
+        if content_words:
+            if (link[1].lower() in func_words or link[3].lower() in func_words):
+                current_ignored += 1
+                continue
         if ignore_WALL:
             if (link[0] == '0') or (link[2] == str(sent_len) and link[3] == "."):
                 current_ignored += 1
@@ -90,7 +97,7 @@ def MakeSets(parse, sent_len, ignore_WALL):
     links_set = set(map(frozenset, link_list))
     return links_set, current_ignored
 
-def Evaluate_Parses(test_parses, test_sents, ref_parses, ref_sents, verbose, ignore, filter, **kwargs):
+def Evaluate_Parses(test_parses, test_sents, ref_parses, ref_sents, verbose, ignore, filter, content, **kwargs):
     """
         Compares test_parses against ref_parses link by link,
         counting errors, 
@@ -124,7 +131,7 @@ def Evaluate_Parses(test_parses, test_sents, ref_parses, ref_sents, verbose, ign
                 continue
 
         # using sets to ignore link directions
-        ref_sets, current_ignored = MakeSets(ref_parse, len(ref_sent), ignore)
+        ref_sets, current_ignored = MakeSets(ref_parse, len(ref_sent), ignore, content)
 
         # if no links are left after ignore, skip parse
         if len(ref_sets) == 0:
@@ -132,21 +139,21 @@ def Evaluate_Parses(test_parses, test_sents, ref_parses, ref_sents, verbose, ign
         else:
             evaluated_parses += 1
 
-        test_sets, dummy = MakeSets(test_parse, len(ref_sent), ignore)
+        test_sets, dummy = MakeSets(test_parse, len(ref_sent), ignore, content)
 
-        # if test_sets has no links left, precision and recall are zero
-        if len(test_sets) == 0:
-            continue
+        ignored_links += current_ignored
 
         # count current parse guesses
         true_pos = len(ref_sets.intersection(test_sets))
         false_neg = len(ref_sets) - true_pos
         false_pos = len(test_sets) - true_pos
 
-        # update global counts
-        ignored_links += current_ignored
-        sum_precision += true_pos / (true_pos + false_pos)  # add parse's precision
-        sum_recall += true_pos / (true_pos + false_neg)  # add parse's recall
+        # only update precision and recall if test_sets has links left,
+        # otherwise they are not counted (they are zero)
+        if len(test_sets) != 0:
+            # update global counts
+            sum_precision += true_pos / (true_pos + false_pos)  # add parse's precision
+            sum_recall += true_pos / (true_pos + false_neg)  # add parse's recall
 
         if verbose:
             print("Sentence: {}".format(" ".join(ref_sent)))
@@ -259,7 +266,7 @@ def Compare_Tokenization(ref_sentences, test_sentences, **kwargs):
                 set_test = set(new_test)
                 ft.write("Sentence Differs:\n{}\nin tokens:{}<--->{}\n".format(" ".join(ref_sent), sorted(list(set_ref - set_test)), sorted(list(set_test - set_ref))))
 
-def Evaluate_Alternative(ref_file, test_file, verbose, ignore_WALL, sequential, random_flag, filter_sentences, compare_tokenization, **kwargs):
+def Evaluate_Alternative(ref_file, test_file, verbose, ignore_WALL, sequential, random_flag, filter_sentences, compare_tokenization, content, **kwargs):
 
     ref_data = Load_File(ref_file)
     ref_parses, ref_sents = Get_Parses(ref_data) 
@@ -278,4 +285,4 @@ def Evaluate_Alternative(ref_file, test_file, verbose, ignore_WALL, sequential, 
         print("Comparing tokenization only...")
         Compare_Tokenization(ref_sents, test_sents, **kwargs)
         return # exit
-    Evaluate_Parses(test_parses, test_sents, ref_parses, ref_sents, verbose, ignore_WALL, filter_sentences, **kwargs)
+    Evaluate_Parses(test_parses, test_sents, ref_parses, ref_sents, verbose, ignore_WALL, filter_sentences, content, **kwargs)

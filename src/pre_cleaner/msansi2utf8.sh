@@ -14,5 +14,5 @@ do
 	filename=$(basename -- "$file")
 	mkdir -p $2
 
-	sed -r "s/\x91/'/g; s/\x92/'/g; s/\x93/\"/g; s/\x94/\"/g" $file > "${2}/${filename}_utf8"
+	sed -r "s/\x91/'/g; s/\x92/'/g; s/\x93/\"/g; s/\x94/\"/g" $file > "${2}/${filename}"
 done
