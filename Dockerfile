@@ -1,6 +1,7 @@
 FROM continuumio/miniconda3
 
-RUN apt-get update -qq && apt-get install -y locales -qq && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen 
+RUN apt-get update -qq && apt-get install -y locales -qq && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen && apt-get install -y libgl1-mesa-glx
+# apt-get install -y software-properties-common
 # RUN /usr/sbin/update-locale LANG=en_US.UTF-8
 
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8
