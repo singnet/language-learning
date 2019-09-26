@@ -4,4 +4,4 @@
 
 # usage: ./freq_table.sh corpus output
 
-tr " " "\n" < $1 | tr "." "\n" | tr "," "\n" | tr ";" "\n" | tr "!" "\n" | tr "?" "\n" | tr ":" "\n" | sort | uniq -c | awk '{print $2"\t"$1}' | sort -k 2,2 -r -n > $2
+tr " " "\n" < $1 | sort | uniq -c | awk '{print $2"\t"$1}' | sort -k 2,2 -r -n > $2

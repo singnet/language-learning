@@ -25,6 +25,6 @@ do
 	filename=$(basename -- "$file")
 	mkdir -p $2
 
-	sed -n -e "$X,$Y p" -e "$Y q" $file > "${2}/${filename}_headless"
+	sed -n -e "$X,$Y p" -e "$Y q" $file > "${2}/${filename}"
 	#tail -n +"$start_line" $file | head -n "$((start_line - end_line))" > trash
 done

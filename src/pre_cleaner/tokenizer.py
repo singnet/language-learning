@@ -45,7 +45,7 @@ def main(argv):
 
     for inputfile in os.listdir(inputdir):
         sentences = Load_Files(inputdir + "/" + inputfile)
-        outfile = outdir + "/" + inputfile + "_tokenized"
+        outfile = outdir + "/" + inputfile
 
         fo = open(outfile, "w")
         for sentence in sentences:

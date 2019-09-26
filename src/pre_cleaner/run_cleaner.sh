@@ -20,14 +20,14 @@ if [ "$3" == "--nosplitter" ]
 then
 	shift
 else
-	SPLIT_DIR=split_books
+	SPLIT_DIR=split-books
 	mkdir -p $SPLIT_DIR
 
 	for file in $PWD/${INPUT_DIR}/*
 	do
 		filename=$(basename -- "$file")
 		echo $file
-	    $CLEANER_PATH/split-sentences.pl < $file > "${SPLIT_DIR}/${filename}_split"
+	    $CLEANER_PATH/split-sentences.pl < $file > "${SPLIT_DIR}/${filename}"
 	done
 	INPUT_DIR=$SPLIT_DIR
 fi

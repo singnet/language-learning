@@ -7,7 +7,7 @@
 
 CLEANER_PATH="`dirname \"$0\"`"
 
-HEADLESS_DIR=headless_books
+HEADLESS_DIR=headless-books
 
 mkdir -p $HEADLESS_DIR
 

@@ -304,7 +304,7 @@ class GrammarTester(AbstractGrammarTestClient):
         if self._is_dir_dict and not (self._options & BIT_EXISTING_DICT):
             dir_arg_list = [self._on_dict_dir]+parse_args if self._options & BIT_DPATH_CREATE else None
 
-            traverse_dir_tree(dict_path, ".4.0.dict", [self._on_dict_file]+parse_args, dir_arg_list, True)
+            traverse_dir_tree(dict_path, ("4.0.dict", "dict.db"), [self._on_dict_file]+parse_args, dir_arg_list, True)
 
         # Otherwise it can be either single .dict file name or name of LG preinstalled dictionary e.g. 'en'
         else:

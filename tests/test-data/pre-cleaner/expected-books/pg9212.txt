@@ -1,0 +1,260 @@
+﻿the project gutenberg ebook of snow flakes ( from " twice told tales " ) , by nathaniel hawthorne
+
+this ebook is for the use of anyone anywhere at no cost and with almost no restrictions whatsoever .
+
+title : snow flakes ( from " twice told tales " )
+
+author : nathaniel hawthorne
+
+posting date : @date@ [ ebook @number@ ] release date : @date@ first posted : @date@ last updated : @date@
+
+language : english
+
+start of this project gutenberg ebook snow flakes
+
+produced by david widger .
+
+html version by al haines .
+
+twice told tales
+
+snow-flakes
+
+by nathaniel hawthorne
+
+it is to be , in good earnest , a wintry storm .
+
+the cloud-spirits are slowly weaving her white mantle .
+
+thus gradually , by silent and stealthy influences , are great changes wrought .
+
+we , likewise , shall lose sight of our mother's familiar visage , and must content ourselves with looking heavenward the oftener .
+
+now , leaving the storm to do his appointed office , let us sit down , pen in hand , by our fireside .
+
+in our brief summer , i do not think , but only exist in the vague enjoyment of a dream .
+
+however transitory their glow , they at least shine amid the darksome shadow which the clouds of the outward sky fling through the room .
+
+now look we forth again , and see how much of his task the storm-spirit has done .
+
+slow and sure !
+
+he has the day , perchance the week , before him , and may take his own time to accomplish nature's burial in snow .
+
+very sad are the flower shrubs in midwinter !
+
+the roofs of the houses are now all white , save where the eddying wind has kept them bare at the bleak corners .
+
+look next into the street , where we have seen an amusing parallel to the combat of those fancied demons in the upper regions .
+
+it is a snow-battle of school-boys .
+
+what pitched battles , worthy to be chanted in homeric strains !
+
+what storming of fortresses , built all of massive snowblocks !
+
+what feats of individual prowess , and embodied onsets of martial enthusiasm !
+
+who reared it ?
+
+and what means it ? "
+
+the shattered pedestal of many a battle monument has provoked these questions , when none could answer .
+
+would it might inspire me to sketch out the personification of a new england winter !
+
+how does winter herald his approach ?
+
+it is stern winter's vesture .
+
+it is the voice of winter ; and when parents and children bear it , they shudder and exclaim , " winter is come !
+
+cold winter has begun his reign already ! "
+
+there he lies stark and stiff , a human shape of ice , on the spot where winter overtook him .
+
+on strides the tyrant over the rushing rivers and broad lakes , which turn to rock beneath his footsteps .
+
+his dreary empire is established ; all around stretches the desolation of the pole .
+
+such fantasies , intermixed among graver toils of mind , have made the winter's day pass pleasantly .
+
+on the window-sill , there is a layer of snow , reaching half-way up the lowest pane of glass .
+
+the garden is one unbroken bed .
+
+next comes a sledge , laden with wood for some unthrifty housekeeper , whom winter has surprised at a cold hearth .
+
+but what dismal equipage now struggles along the uneven street ?
+
+a sable hearse , bestrewn with snow , is bearing a dead man through the storm to his frozen bed .
+
+o , how dreary is a burial in winter , when the bosom of mother earth has no warmth for her poor child !
+
+alas !
+
+i shiver , and think it time to be disconsolate .
+
+whence come they ?
+
+where do they build their nests , and seek their food ?
+
+i know not whence they come , nor why ; yet my spirit has been cheered by that wandering flock of snow-birds .
+
+end of the project gutenberg ebook of snow flakes ( from " twice told tales " ) , by nathaniel hawthorne
+
+end of this project gutenberg ebook snow flakes
+
+this file should be named 9212.txt or 9212.zip this and all associated files of various formats will be found in : @url@
+
+produced by david widger .
+
+html version by al haines .
+
+updated editions will replace the previous one the old editions will be renamed .
+
+project gutenberg is a registered trademark , and may not be used if you charge for the ebooks , unless you receive specific permission .
+
+if you do not charge anything for copies of this ebook , complying with the rules is very easy .
+
+you may use this ebook for nearly any purpose such as creation of derivative works , reports , performances and research .
+
+they may be modified and printed and given away you may do practically anything with public domain ebooks .
+
+redistribution is subject to the trademark license , especially commercial redistribution .
+
+start : full license
+
+the full project gutenberg license please read this before you distribute or use this work
+
+section @number@
+
+general terms of use and redistributing project gutenberg-tm electronic works
+
+1.b .
+
+" project gutenberg " is a registered trademark .
+
+see paragraph 1.c below .
+
+see paragraph 1.e below .
+
+nearly all the individual works in the collection are in the public domain in the united states .
+
+1.d . the copyright laws of the place where you are located also govern what you can do with this work .
+
+copyright laws in most countries are in a constant state of change .
+
+the foundation makes no representations concerning the copyright status of any work in any country outside the united states .
+
+1.e . unless you have removed all references to project gutenberg :
+
+1.e.1 .
+
+this ebook is for the use of anyone anywhere at no cost and with almost no restrictions whatsoever .
+
+1.e.2 .
+
+1.e.3 .
+
+1.e.4 .
+
+1.e.5 .
+
+1.e.6 .
+
+any alternate format must include the full project gutenberg-tm license as specified in paragraph 1.e.1 .
+
+1.e.7 .
+
+1.e.8 .
+
+you may charge a reasonable fee for copies of or providing access to or distributing project gutenberg-tm electronic works provided that
+
+- you comply with all other terms of this agreement for free distribution of project gutenberg-tm works .
+
+1.e.9 .
+
+contact the foundation as set forth in section @number@ below .
+
+1.f .
+
+1.f.1 .
+
+1.f.2 .
+
+1.f.3 .
+
+if you received the work on a physical medium , you must return the medium with your written explanation .
+
+the person or entity that provided you with the defective work may elect to provide a replacement copy in lieu of a refund .
+
+if the second copy is also defective , you may demand a refund in writing without further opportunities to fix the problem .
+
+1.f.4 .
+
+1.f.5 .
+
+some states do not allow disclaimers of certain implied warranties or the exclusion or limitation of certain types of damages .
+
+the invalidity or unenforceability of any provision of this agreement shall not void the remaining provisions .
+
+1.f.6 .
+
+section @number@
+
+information about the mission of project gutenberg-tm
+
+it exists because of the efforts of hundreds of volunteers and donations from people in all walks of life .
+
+in @number@ the project gutenberg literary archive foundation was created to provide a secure and permanent future for project gutenberg-tm and future generations .
+
+section @number@
+
+information about the project gutenberg literary archive foundation
+
+the foundation's ein or federal tax identification number is 64-6221541 .
+
+its 501 ( c ) ( @number@ ) letter is posted at @url@
+
+its business office is located at @number@ north @number@ west , salt lake city , ut @number@ ( @number@ ) 596-1887 , email @email@
+
+email contact links and up to date contact information can be found at the foundation's web site and official page at @url@
+
+for additional contact information : dr . gregory b . newby chief executive and director @email@
+
+section @number@
+
+information about donations to the project gutenberg literary archive foundation
+
+many small donations ( $ 1 to $ 5 , 000 ) are particularly important to maintaining tax exempt status with the irs .
+
+the foundation is committed to complying with the laws regulating charities and charitable donations in all @number@ states of the united states .
+
+we do not solicit donations in locations where we have not received written confirmation of compliance .
+
+to send donations or determine the status of compliance for any particular state visit @url@
+
+international donations are gratefully accepted , but we cannot make any statements concerning tax treatment of donations received from outside the united states .
+
+u.s . laws alone swamp our small staff .
+
+please check the project gutenberg web pages for current donation methods and addresses .
+
+donations are accepted in a number of other ways including including checks , online payments and credit card donations .
+
+to donate , please visit : @url@
+
+section @number@
+
+general information about project gutenberg-tm electronic works .
+
+for thirty years , he produced and distributed project gutenberg-tm ebooks with only a loose network of volunteer support .
+
+thus , we do not necessarily keep ebooks in compliance with any particular paper edition .
+
+most people start at our web site which has the main pg search facility :
+
+@url@
+

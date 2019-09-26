@@ -247,7 +247,7 @@ class LGInprocParser(AbstractFileParserClient):
 
             self._logger.debug(f"Dictionary version: {dict_ver}, link-parser version: {self._lg_version}")
 
-            if dict_ver != "0.0.0" and (self._lg_version < "5.5.0" and dict_ver >= "5.5.0" or
+            if dict_ver != "sql-dict" and dict_ver != "0.0.0" and (self._lg_version < "5.5.0" and dict_ver >= "5.5.0" or
                     self._lg_version >= "5.5.0" and dict_ver < "5.5.0"):
                 raise LGParseError(f"Wrong dictionary version: {dict_ver}, expected: {self._lg_version}")
 
