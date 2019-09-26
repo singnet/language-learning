@@ -70,11 +70,16 @@ def aggregate(categories, threshold, similarity_function, verbose = 'none'):
 
     return cats, sorted(set(similarities), reverse = True)
 
+import sys
 
 def reorder(cats):
+    # logger = logging.getLogger(__name__ + ".reorder")
+    # logger.debug("cats" + str(cats))
+
     # Parents: top clusters
     top_clusters = [(i, len(cats['words'][i])) for i, x in
                     enumerate(cats['parent']) if x == 0 and i > 0]
+
     top = [0] + [x[0] for x in
                  sorted(top_clusters, key = itemgetter(1), reverse = True)]
     ordnung = copy(top)  # deepcopy(top)? - copy list objects as well
@@ -106,7 +111,7 @@ def reorder(cats):
                            for i, x in enumerate(new_cats['parent'])]
 
     for key in cats.keys():
-        if key not in ['cluster', 'parent']:
+        if key not in ['cluster', 'parent', 'word_counts']:
             new_cats[key] = [cats[key][i] if i < len(cats[key]) else None
                              for i in ordnung]
 

@@ -20,6 +20,9 @@ __all__ = ['learn_grammar', 'learn']
 
 
 def learn(**kwargs):
+    def reverse_count(count: int) -> float:
+        return 1.0 / float(count) if count else 0.0
+
     logger = logging.getLogger(__name__ + ".learn")
     verbose = kwa('none', 'verbose', **kwargs)
     start = time.time()
@@ -178,7 +181,17 @@ def learn(**kwargs):
         re09 = save_cat_tree(rules, output_categories, verbose='none')
     # TODO: check file save error?
     log.update(re09)
-    re10 = save_link_grammar(rules, output_grammar, grammar_rules)
+
+    # # Disjunct cost function dictionary
+    # cost_ptr_dict = {"reverse_count": reverse_count}
+    #
+    # # Select disjunct cost function according to specified parameter if "add_disjunct_costs" is specified
+    # cost_function = cost_ptr_dict[kwargs.get("disjunct_cost_formula", "reverse_count")] \
+    #     if kwargs.get("add_disjunct_costs", False) == True else None
+
+    # Save 'rules' into proper Link Grammar dictionary file
+    re10 = save_link_grammar(rules, output_grammar, grammar_rules, "", "", kwargs.get("add_disjunct_costs", False))
+
     log.update(re10)
     log.update({'finish': str(UTC())})
     log.update({'grammar_learn_time': sec2string(time.time() - start)})
