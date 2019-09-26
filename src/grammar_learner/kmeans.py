@@ -2,8 +2,11 @@
 import logging
 import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.metrics import pairwise_distances, silhouette_score
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import pairwise_distances, silhouette_score
 from statistics import mode
 from .utl import round1, round2, round3
 # -from kmeans import cluster_words_kmeans   #this module

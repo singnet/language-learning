@@ -1,13 +1,16 @@
 # language-learning/src/grammar_learner/pparser.py                      # 190417
-import logging, pandas as pd
+import logging
+import pandas as pd
 from collections import Counter
 from .corpus_stats import corpus_stats
 from .utl import kwa
 
 
 def mst2words(lines, **kwargs):
+    logger = logging.getLogger(__name__ + ".mst2words")
     lw = kwa('', 'left_wall', **kwargs)
     dot = kwa(False, 'period', **kwargs)
+
     pairs = []
     for line in lines:
         if len(line) > 1:
@@ -40,6 +43,15 @@ def mst2connectors(lines, **kwargs):
 
 
 def mst2disjuncts(lines, **kwargs):
+    """
+    Create data frame and fill it out with words and protodisjuncts, obtained from .ull file(s).
+
+    :param lines:       Text lines, obtained from .ull file(s)
+    :param kwargs:      Argument dictionary.
+    :return:            Pandas data frame filled with words and protodisjuncts.
+    """
+    logger = logging.getLogger(__name__ + ".mst2disjuncts")
+
     lw = kwa('', 'left_wall', **kwargs)
     dot = kwa(False, 'period', **kwargs)
     min_word_count = kwa(1, 'min_word_count', **kwargs)                 # 190417
@@ -47,6 +59,8 @@ def mst2disjuncts(lines, **kwargs):
 
     if len(lines[-1]) > 0: lines.append([])
     pairs = []
+
+    # Temporary dictionaries for links and words of one sentence. Cleanup is done in save_djs.
     links = dict()
     words = dict()
 
@@ -56,8 +70,21 @@ def mst2disjuncts(lines, **kwargs):
     # tokens: words with counts >= min_word_count                       # 190417
     tokens = {w: c for w, c in Counter([w for s in sl for w in s]).items()
               if c >= min_word_count}
-    if lw not in ['', 'none']: tokens['###LEFT-WALL###'] = 1            # 190424
-    if dot: tokens['.'] = 1                                             # 190424
+
+    # logger.debug(f"tokens: {tokens}")
+
+    # if lw not in ['', 'none']: tokens['###LEFT-WALL###'] = 1            # 190424
+    # if dot: tokens['.'] = 1                                             # 190424
+
+    if lw in ['', 'none']:
+        if '###LEFT-WALL###' in tokens:
+            tokens.pop('###LEFT-WALL###')
+    else:
+        if '###LEFT-WALL###' not in tokens:
+            tokens['###LEFT-WALL###'] = 1
+
+    if not dot and "." in tokens:
+        tokens.pop(".")
 
     def save_djs(words, links):
         if len(links) > 0:
@@ -82,15 +109,20 @@ def mst2disjuncts(lines, **kwargs):
         if len(line) > 1:
             if line[0].isdigit():
                 x = line.split()
+
+                # Only link lines, obtained from .ull-file, are taken into account
                 if len(x) in [4, 5] and x[0].isdigit() and x[2].isdigit() \
                         and x[1] in tokens and x[3] in tokens:          # 190417
                     if x[1] == '###LEFT-WALL###': x[1] = lw             # 190424
-                    try:  # FIXME: overkill? already checked by .isdigit lin3 85
-                        i = int(x[0])
-                        j = int(x[2])
-                    except: continue
-                    words[i] = x[1]
-                    words[j] = x[3]
+                    # try:  # FIXME: overkill? already checked by .isdigit lin3 85
+                    i = int(x[0])           # left word index
+                    j = int(x[2])           # right word index
+                    # except: continue
+                    words[i] = x[1]         # left word
+                    words[j] = x[3]         # right word
+
+                    # Each word (marked by the index) has a set of linked word indexes
+                    #   where left indexes are saved negative while right ones are saved positive.
                     if i in links:
                         links[i].add(j)
                     else: links[i] = set([j])
@@ -107,6 +139,7 @@ def mst2disjuncts(lines, **kwargs):
     df = pd.DataFrame(pairs, columns=['word','link'])
     df['count'] = 1
 
+    # logger.debug(str(df))
     return df
 
 
@@ -230,7 +263,7 @@ def filter_lines(lines, **kwargs):                                      # 90216
 
 
 def lines2links(lines, **kwargs):                                       # 190410
-    # TODO: logger = logging.getLogger(__name__ + "lines2links")
+    logger = logging.getLogger(__name__ + ".lines2links")
     context = kwa(2, 'context', **kwargs)
     group = True  # always? » kwa(True, 'group', **kwargs)? FIXME:DEL?
 
@@ -242,7 +275,9 @@ def lines2links(lines, **kwargs):                                       # 190410
     # df = pd.DataFrame(columns=['word', 'link', 'count'])
     if context > 1:  # ddf - disjuncts DataFrame
         df = mst2disjuncts(lines, **kwargs)[['word', 'link', 'count']]
+
         unique_djs = df.groupby('link', as_index = False).sum()
+
         avg_disjunct_count = round(len(df) / len(unique_djs), 1)
         df['djlen'] = df['link'].apply(lambda x: x.count('&') + 1)
         avg_disjunct_length = float(round(df['djlen'].mean(), 1))
@@ -285,6 +320,7 @@ def lines2links(lines, **kwargs):                                       # 190410
                          ascending=[False, True, True]) \
             .reset_index(drop=True)
 
+    # logger.debug(str(df))
     return df, re
 
 # Notes:

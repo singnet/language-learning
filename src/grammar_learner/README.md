@@ -56,6 +56,8 @@ kwargs = {                              # defaults:
     'tmpath' : module_path + '/tmp/',   # temporary files directory (legacy)
     'linkage_limit'         : 1000  ,   # Link Grammar parameter for tests
     'verbose': 'min'    # display intermediate results: 'none', 'min', 'mid', 'max'
+    'add_disjunct_costs'    : False,    # add disjunct costs when saving grammar rules to LG dictionary file
+    'disjunct_cost_function' : 'reverse_count' # 1/disjunct_count
 }
 response = learn_grammar(**kwargs)
 ```
@@ -117,3 +119,11 @@ optimal number of clusters: minimal, providing `clustering_metric` better than s
 - 'jaccard' -- group ILE-based rules by jaccard similarity (mid-2018 legacy),  
 - 'hierarchical' -- updated 'jaccard' with rules renumbering in each loop (Nov 2018),  
 - 'fast' -- experimental iterative jaccard with rules renumbering (Nov 2018),  
+
+**'add_disjunct_costs'**: True / False
+- True -- disjunct costs are added to each disjunctc when grammar rules are saved to Link Grammar .dict file. 
+- False -- grammar rules are saved the ordinary way without explicitly set costs.
+
+**'disjunct_cost_func'**: 'reverse_count' / 'mi_simplified'
+- 'reverse_count' -- reverse disjunct count (1/disjunct_count)
+- 'mi_simplified' -- mutual information simplified formula (log(1/disjunct_count))

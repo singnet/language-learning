@@ -146,8 +146,10 @@ class TestGrammarLearner(unittest.TestCase):
         else:
             print('\nlen(rule_list) =', len(rule_list),
                   '!= len(base_list) =', len(base_list))
-            assert len(rule_list) == len(base_list)
-
+            assert len(rule_list) == len(base_list), f"\nlen(rule_list)={len(rule_list)}" \
+                                                     f"\nlen(base_list)={len(base_list)}" \
+                                                     f"\nrule_list:\n{rule_list}" \
+                                                     f"\nbase_list:\n{base_list}"
 
     def test_turtle_generalize_rules(self):
         base  = module_path + '/tests/data/POC-Turtle/' + \
@@ -180,7 +182,12 @@ class TestGrammarLearner(unittest.TestCase):
         base_list = [line for line in lst if line[0:1] in ['"', '(']]
         if len(rule_list) == len(base_list):
             assert rule_list == base_list
-        else: assert len(rule_list) == len(base_list)
+        else:
+            assert len(rule_list) == len(base_list), f"\nlen(rule_list)={len(rule_list)}" \
+                                                     f"\nlen(base_list)={len(base_list)}" \
+                                                     f"\nrule_list:\n{rule_list}" \
+                                                     f"\nbase_list:\n{base_list}"
+            # assert len(rule_list) == len(base_list)
 
 
     def test_pqa_turtle_diled_no_generalization(self):

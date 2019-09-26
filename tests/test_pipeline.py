@@ -37,25 +37,32 @@ class PipelineTestCase(PipelineIntegrationTestCase):
         self.run_pipeline_test_case("GL-GT-ALE", "data/CDS/LG-E-clean")
 
     # @unittest.skip
+    def test_gl_djct_costs_CDS(self):
+        """ GL(disjunct-cost)+GT ALE50 test case performed on CDS-clean corpus """
+        self.run_pipeline_test_case("GL-DJCT-COSTS-CDS", "data/CDS/LG-E-clean")
+
+    # @unittest.skip
     def test_pe(self):
         """ PE test case performed on POC-English-ref and POC-English-ref-multi parses """
         self.run_pipeline_test_case("PE",
                                     [
                                         ("tests/test-data/parses/poc-english-ref/poc_english.txt.ull", "single"),
                                         ("tests/test-data/parses/poc-english-multi-ref", "multi")
-                                    ] )
+                                    ])
 
     # @unittest.skip
     def test_tp(self):
         """ TP test case performed on CDS-clean corpus (parses) """
         self.run_pipeline_test_case("TP", "data/CDS/LG-E-clean")
 
+    # @unittest.skip
     def test_tp_text_corpus(self):
         """ TP test case performed on CDS-clean corpus (text) """
         self.run_pipeline_test_case("TP-TXT-CORPUS",
                                     [
                                         ("data/CDS/LG-E-clean", "ref")
-                                    ] )
+                                    ])
+
 
 if __name__ == '__main__':
     unittest.main()

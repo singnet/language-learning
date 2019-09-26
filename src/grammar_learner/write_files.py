@@ -4,6 +4,8 @@ import os, linkgrammar
 from collections import OrderedDict
 from copy import deepcopy
 from .utl import UTC
+from typing import Tuple, Union, List
+
 
 def list2file(lst, out_file):
     string = ''
@@ -25,24 +27,48 @@ def list2file(lst, out_file):
 
 
 def rules2list(rules_dict, grammar_rules = 2, verbose = 'none'):
-    logger = logging.getLogger(__name__ + ".rules2list")
-    # rules_dict: {'cluster': [], 'words': [], } ⇒ return rules []
-    # grammar_rules = kwargs['grammar_rules']: 1 - connectors, 2 - disjuncts
+    """
+    Convert rules from dictionary structure to list structure
 
-    sign = lambda x: ('+', '-')[x < 0]
+    :param rules_dict:          {'cluster': [], 'words': [], } ⇒ return rules []
+    :param grammar_rules:       kwargs['grammar_rules']: 1 - connectors, 2 - disjuncts
+    :param verbose:             Verbosity argument
+    :param cost_func:
+    :return:                    Rule list: [[<cluster>, [<word list>], '', '', [(<disjunct>, <cost>)...]]...]
+    """
+    logger = logging.getLogger(__name__ + ".rules2list")
+    # logger.debug("rules_dict: " + str(rules_dict))
+
+    # sign = lambda x: ('+', '-')[x < 0]
 
     def disjunct(x, cluster_list, cluster):
+        """
+        That's where a connector turns from numeric into character representation
+
+        :param x:               Other cluster ID (integer)
+        :param cluster_list:    Cluster name list (letters)
+        :param cluster:         Cluster name (letter corresponding to current cluster name)
+        :return:                Connector (two cluster names stitched together followed by direction sign)
+        """
         if x < 0:
             return cluster_list[abs(x)] + cluster + '-'
         else:
             return cluster + cluster_list[abs(x)] + '+'
 
+    DJ_VECTOR, DJ_COST = 0, 1
+
+    # Using different dictionary data entry when disjuncts are followed by costs
+    add_cost = True if rules_dict.get("cl_dj_cst", None) is not None else False
+    dj_tuples = rules_dict['cl_dj_cst'] if add_cost else rules_dict['disjuncts']
+
     rules = []
     for i, cluster in enumerate(rules_dict['cluster']):
-        if i == 0: continue
-        if cluster is None: continue
+        if i == 0 or cluster is None:
+            continue
+
         rule = [cluster]
         rule.append(sorted(rules_dict['words'][i]))
+
         if grammar_rules in [1,-1]:  # interconnected connector-based rules
             lefts = set()
             rights = set()
@@ -58,48 +84,88 @@ def rules2list(rules_dict, grammar_rules = 2, verbose = 'none'):
         else:  # rules: disjuncts
             rule.append('')  # lefts
             rule.append('')  # rights
+
             disjuncts = []
-            for djtuple in rules_dict['disjuncts'][i]:
+
+            # for djtuple in rules_dict['disjuncts'][i]:
+            for djtuple in dj_tuples[i]:
                 try:
+                    vector, cost = (djtuple[DJ_VECTOR], djtuple[DJ_COST]) if add_cost else (djtuple, 1.0)
+
                     dj = ' & '.join(
-                        [disjunct(x, rules_dict['cluster'], cluster)
-                         for x in djtuple])
-                    disjuncts.append(dj)
+                        [disjunct(x, rules_dict['cluster'], cluster) for x in vector])
+
+                    disjuncts.append((dj, cost))
+
                 except TypeError:
                     logger.critical(f'- wrong djtuple? - {djtuple}')
-            rule.append(sorted(disjuncts))
+
+            rule.append(sorted(disjuncts, key=lambda x: x[0]))
+            # rule.append(sorted(disjuncts))
         rules.append(rule)
 
     return rules
 
 
 def save_link_grammar(rules, output_grammar, grammar_rules = 2,
-                      header = '', footer = ''):  # legacy FIXME:DEL?
-    # rules: [] or {}
-    # grammar_rules = kwargs['grammar_rules']: 1 ⇒ connectors, 2+ ⇒ disjuncts
+                      header = '', footer = '',       # legacy FIXME:DEL?
+                      add_cost = False):
+    """
+    Save grammar rules into properly formated Link Grammar dictionary file
+
+    :param rules:           Rule tree represented by list of lists:
+                            [<cluster1_record>, <cluster2_record>,..., <clustern_record>]
+                            where <clusterx_record> is:
+                            [ <cluster_id>, [<words>], '', '',
+                                    [(<disj1>, <cost1>),(<disj2>, <cost2>), ..., (<disjn>, <costn>)] ]
+    :param output_grammar:  Path to the output dictionary file.
+    :param grammar_rules:   Integer value: 1 ⇒ connectors, 2+ ⇒ disjuncts
+    :param header:          Header text string (legacy?)
+    :param footer:          Footer test string (legacy?)
+    :param cost_func:       Disjunct cost function pointer.
+    :return:                Responce dictionary
+    """
+    CLUSTER, WORDS, LEFTS, RIGHTS, DISJUNCTS = 0, 1, 2, 3, 4
+
+    def wrap_disjunct(disjunct: Union[str, Tuple[str, str]]) -> str:
+        """ Wrap disjunct into square brackets if cost is provided in tuple """
+
+        # If there is a tuple such as (DISJUNCT, COST)
+        if isinstance(disjunct, tuple):
+            return f'[{disjunct[0]}]{disjunct[1]}' if add_cost else f'({str(disjunct[0])})'
+
+        # Otherwise do it in an old fashion style
+        else:
+            return f'({str(disjunct)})'
+
+    logger = logging.getLogger(__name__ + ".save_link_grammar")
+    # logger.debug(f"Rules:\n{rules}")
+
     if type(rules) is dict:
         rules = rules2list(rules, grammar_rules)
+
+    # logger.debug(f"Rules:\n{rules}")
 
     line_list = list()
     clusters = set()
     for rule in rules:
         line = ''
-        if len(rule[2]) > 0 and len(rule[3]) > 0:
+        if len(rule[LEFTS]) > 0 and len(rule[RIGHTS]) > 0:
             line += '{' + ' or '.join(
-                str(x) for x in rule[2]) + '} & {' + ' or '.join(
-                str(y) for y in rule[3]) + '}'
+                str(x) for x in rule[LEFTS]) + '} & {' + ' or '.join(
+                str(y) for y in rule[RIGHTS]) + '}'
         else:
-            if len(rule[2]) > 0:
-                line += ' or '.join('(' + str(x) + ')' for x in rule[2])
-            elif len(rule[3]) > 0:
-                line += ' or '.join('(' + str(x) + ')' for x in rule[3])
-        if len(rule[4]) > 0:
+            if len(rule[LEFTS]) > 0:
+                line += ' or '.join('(' + str(x) + ')' for x in rule[LEFTS])
+            elif len(rule[RIGHTS]) > 0:
+                line += ' or '.join('(' + str(x) + ')' for x in rule[RIGHTS])
+        if len(rule[DISJUNCTS]) > 0:
             if line != '': line += ' or '
-            line += ' or '.join('(' + str(x) + ')' for x in rule[4])
+            line += ' or '.join(wrap_disjunct(x) for x in rule[DISJUNCTS])
 
-        cluster_number = '% ' + str(rule[0]) + '\n'  # comment line: cluster
+        cluster_number = '% ' + str(rule[CLUSTER]) + '\n'  # comment line: cluster
         cluster_and_words = ' '.join(
-            '"' + word + '"' for word in rule[1]) + ':\n'
+            '"' + word + '"' for word in rule[WORDS]) + ':\n'
         line_list.append(cluster_number + cluster_and_words + line + ';\n')
         clusters.add(rule[0])
 

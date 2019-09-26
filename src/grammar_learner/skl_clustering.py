@@ -1,18 +1,22 @@
 # language-learning/src/grammar_learner/skl_clustering.py               # 190425
 import numpy as np
-from sklearn.cluster import AgglomerativeClustering, KMeans, MeanShift, \
-    estimate_bandwidth
-# from sklearn import metrics, pairwise_distances
-from sklearn.metrics import silhouette_score, calinski_harabaz_score
-from sklearn.neighbors import kneighbors_graph
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
+    from sklearn.cluster import AgglomerativeClustering, KMeans, MeanShift, \
+        estimate_bandwidth
+    # from sklearn import metrics, pairwise_distances
+    from sklearn.metrics import silhouette_score, calinski_harabaz_score
+    from sklearn.neighbors import kneighbors_graph
 # davies_bouldin_score -- next scikit-learn release?
 # https://github.com/scikit-learn/scikit-learn/issues/11303
 from .utl import kwa
 from .clustering import cluster_id
-
+import logging
 
 def skl_clustering(cd, n_clusters=10, **kwargs):
     # cd: ndarray(words*disjuncts)
+    # logger = logging.getLogger(__name__ + ".skl_clustering")
     nc = min(n_clusters, cd.shape[0])                           # 190425
     clustering = kwa(('agglomerative', 'ward'), 'clustering', **kwargs)
     if type(clustering) is str:
@@ -23,13 +27,15 @@ def skl_clustering(cd, n_clusters=10, **kwargs):
         elif clustering in ['mean_shift', 'mean shift', 'meanshift']:
             clustering = ('mean_shift', 2)  # TODO: check (..., 'auto)
         elif clustering == 'group':  # TODO: call ILE clustering?
-            return [], {'clustering': 'skl_clustering error',
-                        'clustering_error':
-                            'ILE grouping not supported in skl_clustering'}, []
+            raise NotImplementedError("ILE grouping is not supported")
+            # return [], {'clustering': 'skl_clustering error',
+            #             'clustering_error':
+            #                 'ILE grouping not supported in skl_clustering'}, []
         elif clustering == 'random':  # TODO: call random clustering?
-            return [], {'clustering': 'skl_clustering error',
-                        'clustering_error':
-                            'random not supported in skl_clustering'}, []
+            raise NotImplementedError("'random' is not supported")
+            # return [], {'clustering': 'skl_clustering error',
+            #             'clustering_error':
+            #                 'random not supported in skl_clustering'}, []
         else:
             clustering = ('agglomerative', 'ward')
 
