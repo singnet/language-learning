@@ -247,6 +247,16 @@ class LGInprocParserTestCase(unittest.TestCase):
             pr.parse("tests/test-data/dict/poc-turtle", "tests/test-data/corpora/poc-turtle/poc-turtle.txt",
                      f"{self.tmp_dir}/poc-turtle.txt.ull", "tests/test-data/corpora/poc-turtle/poc-horse.txt", BIT_PARSE_QUALITY)
 
+    @unittest.skip # Remove skipping when LG version >= 5.6.2
+    def test_parse__sql_dictionary(self):
+        """
+        Test that LG parser can take a dictionary in sql format (looks for file dict.db)
+        """
+        with self.assertRaises(LGParseError):
+            pr = LGInprocParser()
+            pr.parse("tests/test-data/dict/sql", "tests/test-data/corpora/poc-turtle/poc-turtle.txt",
+                     f"{self.tmp_dir}/poc-turtle.txt.ull", None, 0, bar)
+
     # @unittest.skip
     def test_parse_invalid_file_format(self):
 
